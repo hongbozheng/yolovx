@@ -2,6 +2,56 @@
 
 Python Implementation of YOLOv3
 
+## Project Setup
+
+#### Environment Setup [Linux]
+
+1. Install `conda`
+
+Go to [conda >> User guide >> Installation >> Installing on Linux](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
+
+In the terminal, go to `Downloads` folder and run the following command
+```
+bash Anaconda3-<latest version>-Linux-x86_64.sh
+```
+`<latest version>` the latest date of the released version of Anaconda3
+
+Follow the instruction and install conda
+
+After installing conda successfully, run the following command in the terminal
+```
+source ~/.bashrc
+```
+This will source the bash script
+
+2. Create a new conda environment
+
+Go to [conda >> User guide >> Tasks >> Managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)
+
+In the terminal, create a new environment with the following command
+```
+conda create -n <name> python=<python version>
+```
+`<name>` name of the environment
+`<version>` python version (e.g. python=3.9)
+
+Activate the new environment with the following command
+```
+conda activate <name>
+```
+`<name>` name of the environment just created
+
+3. Install Python Library
+
+* numpy
+* torch
+
+In the terminal, executing the following commands
+```
+conda install numpy
+conda install -c pytorch pytorch
+```
+
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
