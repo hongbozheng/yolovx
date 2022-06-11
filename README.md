@@ -6,7 +6,7 @@ Python Implementation of YOLOv3
 
 #### Environment Setup [Linux]
 
-1. Install `conda`
+##### 1. Install `conda`
 
 Go to [conda >> User guide >> Installation >> Installing on Linux](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
 
@@ -24,7 +24,7 @@ source ~/.bashrc
 ```
 This will source the bash script
 
-2. Create a new conda environment
+##### 2. Create a new conda environment
 
 Go to [conda >> User guide >> Tasks >> Managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)
 
@@ -41,7 +41,7 @@ conda activate <name>
 ```
 `<name>` name of the environment just created
 
-3. Install Python Library
+##### 3. Install Python Library
 
 * numpy
 * torch
