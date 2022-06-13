@@ -10,6 +10,8 @@ Python Implementation of YOLOv3
 
 Go to [conda >> User guide >> Installation >> Installing on Linux](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
 
+Under section `Download the Installer`, click on `Anaconda Installer for Linux`
+
 In the terminal, go to `Downloads` folder and run the following command
 ```
 bash Anaconda3-<latest version>-Linux-x86_64.sh
@@ -33,6 +35,7 @@ In the terminal, create a new environment with the following command
 conda create -n <name> python=<python version>
 ```
 `<name>` name of the environment
+
 `<version>` python version (e.g. python=3.9)
 
 Activate the new environment with the following command
