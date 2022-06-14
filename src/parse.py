@@ -1,3 +1,7 @@
+'''
+Parse YOLO cfg file
+'''
+
 import logging
 from enum import IntEnum
 
@@ -120,7 +124,8 @@ def parse_cfg(cfg):
 
     append_block()
     logging.debug('[blocks]: {}'.format(blocks))
-    logging.debug('[len(blocks)]: {}'.format(len(blocks)))
+    logging.info('[INFO]: Finish parsing cfg file')
+    logging.info('[len(blocks)]: {}'.format(len(blocks)))
     return blocks
 
-parse_cfg('../cfg/yolov3.cfg')
+# parse_cfg('../cfg/yolov3.cfg')

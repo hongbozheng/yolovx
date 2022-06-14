@@ -1,12 +1,19 @@
 '''
-Implementation of YOLOv3 architecture
+Create model of YOLOv3 architecture
 '''
 
-from parse import *
+from parse import parse_cfg
+import logging
 import torch
 import torch.nn as nn
 
+logging.basicConfig(level=logging.DEBUG)
+
 def create_model(blocks):
+    
+    net = blocks[0]
+    logging.info('[Net INFO]: {}'.format(net))
+    
     model = nn.ModuleList()
     prev_filters = 3
     index = 0
@@ -16,6 +23,7 @@ def create_model(blocks):
 
         if block['type'] == 'net':
             continue
+
         if block['type'] == 'convolutional':
             try:
                 batch_normalize = block['batch_normalize']
@@ -23,11 +31,10 @@ def create_model(blocks):
             except:
                 batch_normalize = 0
                 bias = True
-            filters = int(block['filters'])
-            kernel_size = int(block['size'])
-            stride = int(block['stride'])
-            padding = int(block['pad'])
-            activation = block['activation']
+
+            filters     = block['filters']
+            kernel_size = block['size']
+            padding     = block['pad']
             
             # information on darknet wiki
             if padding:
@@ -35,40 +42,49 @@ def create_model(blocks):
             else:
                 padding = 0
 
-            # why in_channels = 3 ???
-            convolutional_layer = nn.Conv2d(in_channels=prev_filters,out_channels=filters,
-                                            kernel_size=kernel_size,stride=stride,
-                                            padding=padding,bias=bias)
+            convolutional_layer = nn.Conv2d(in_channels=prev_filters,
+                                            out_channels=filters,
+                                            kernel_size=kernel_size,
+                                            stride=block['stride'],
+                                            padding=padding,
+                                            bias=bias)
             module.add_module('Conv2d_{}'.format(index),convolutional_layer)
 
             if batch_normalize:
-                batch_norm = nn.BatchNorm2d(filters)
+                batch_norm = nn.BatchNorm2d(num_features=filters)
                 module.add_module('BatchNorm2d_{}'.format(index),batch_norm)
 
-            if activation == 'leaky':
-                activation_function = nn.LeakyReLU(0.1,inplace=True)
+            if block['activation'] == 'leaky':
+                activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
                 module.add_module('LeakyReLU_{}'.format(index),activation_function)
 
         elif block['type'] == 'shortcut':
-            from_ = int(block['from'])
-            # module.add_module('short_cut{}'.format(index),nn.Module)
-            continue
+            # what is he doing with from_ in Github ???
+            # EmptyLayer() class inherit from nn.Module, necessary?
+            module.add_module('short_cut_{}'.format(index),nn.Module())
+        
         elif block['type'] == 'yolo':
-            continue
+            print(block['mask'])
 
         elif block['type'] == 'route':
-            continue
+            # EmptyLayer() class inherit from nn.Module, necessary?
+            module.add_module('route_{}'.format(index),nn.Module())
 
         elif block['type'] == 'upsample':
-            stride = int(block['stride'])
-            upsample = nn.Upsample(scale_factor=2,mode='nearest')
+            upsample = nn.Upsample(scale_factor=block['stride'],mode='nearest')
             module.add_module('upsample_{}'.format(index),upsample)
+
+        else:
+            logging.error('[ERROR]: Module type NOT FOUND; Check cfg file')
+            assert False
     
         model.append(module)
         prev_filters = filters
         index+=1
-
+    
+    print('[Model INFO]: {}'.format(model))
     return model
 
 blocks = parse_cfg('../cfg/yolov3.cfg')
-print(create_model(blocks=blocks))
+create_model(blocks=blocks)
+# print(create_model(blocks=blocks))
