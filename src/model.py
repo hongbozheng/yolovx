@@ -2,17 +2,17 @@
 Create model of YOLOv3 architecture
 '''
 
-from parse import parse_cfg
 import logging
-import torch
 import torch.nn as nn
+# Test
+# from parse import parse_cfg
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 def create_model(blocks):
     
     net = blocks[0]
-    logging.info('[Net INFO]: {}'.format(net))
+    logging.info('[Net]: {}'.format(net))
     
     model = nn.ModuleList()
     prev_filters = 3
@@ -67,6 +67,13 @@ def create_model(blocks):
             print(block['mask'])
 
         elif block['type'] == 'route':
+            # TODO: Need to modify this since the output of route layer
+            #       will influence the input of the next layer
+            
+            # TODO: Maybe need to calculate cache module index here
+            #       so that we don't need to cache all the outpus of
+            #       modules which is memory expensive
+
             # EmptyLayer() class inherit from nn.Module, necessary?
             module.add_module('route_{}'.format(index),nn.Module())
 
@@ -82,9 +89,12 @@ def create_model(blocks):
         prev_filters = filters
         index+=1
     
-    print('[Model INFO]: {}'.format(model))
-    return model
+    return net, model
 
-blocks = parse_cfg('../cfg/yolov3.cfg')
-create_model(blocks=blocks)
-# print(create_model(blocks=blocks))
+def get_cache_module_index(blocks):
+    pass
+
+# Test
+# blocks = parse_cfg('../cfg/yolov3.cfg')
+# net,model = create_model(blocks=blocks)
+# print('[Model]: {}'.format(model))
