@@ -59,11 +59,14 @@ def create_model(blocks):
         elif block['type'] == 'shortcut':
             # what is he doing with from_ in Github ???
             # EmptyLayer() class inherit from nn.Module, necessary?
+            cache_module_index.append(index-1)
             try:
-                for layer in block['from']:
-                    cache_module_index.append(index+layer)
+                for i in range(len(block['from'])):
+                    block['from'][i] += index
+                    cache_module_index.append(block['from'][i])
             except:
-                cache_module_index.append(index+block['from'])
+                block['from'] += index
+                cache_module_index.append(block['from'])
             module.add_module('short_cut_{}'.format(index),nn.Module())
         
         elif block['type'] == 'yolo':
@@ -73,21 +76,22 @@ def create_model(blocks):
             # EmptyLayer() class inherit from nn.Module, necessary?
             filters = 0
             try:
-                for layer in block['layers']:
-                    if layer < 0:
-                        cache_module_index.append(index+layer)
-                        filters += filters_list[index+layer]
+                for i in range(len(block['layers'])):
+                    if block['layers'][i] < 0:
+                        block['layers'][i] += index
+                        filters += filters_list[block['layers'][i]]
+                        cache_module_index.append(block['layers'][i])
                     else:
-                        cache_module_index.append(layer)
-                        filters += filters_list[layer]
+                        filters += filters_list[block['layers'][i]]
+                        cache_module_index.append(block['layers'][i])
             except:
-                layer = block['layers']
-                if layer < 0:
-                    cache_module_index.append(index+layer)
-                    filters = filters_list[index+layer]
+                if block['layers'] < 0:
+                    block['layers'] += index
+                    filters = filters_list[block['layers']]
+                    cache_module_index.append(block['layers'])
                 else:
-                    cache_module_index.append(layer)
-                    filters = filters_list(layer)
+                    cache_module_index.append(block['layers'])
+                    filters = filters_list(block['layers'])
 
             module.add_module('route_{}'.format(index),nn.Module())
 
