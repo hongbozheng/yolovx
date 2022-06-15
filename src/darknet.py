@@ -13,7 +13,7 @@ class Darknet(nn.Module):
     def __init__(self,cfg):
         super(Darknet,self).__init__()
         self.blocks = parse_cfg(cfg)
-        self.net,self.model = create_model(blocks=self.blocks)
+        self.net,self.model,self.cache_module_index = create_model(blocks=self.blocks)
 
     def get_blocks(self):
         return self.blocks
@@ -24,14 +24,21 @@ class Darknet(nn.Module):
     def get_model(self):
         return self.model
 
+    def get_cache_module_index(self):
+        return self.cache_module_index
+
     def forward(self,x):
-        
+       
+        module_cache = {}
+
         for i in range(len(model)):
             module_type = model[i]['type']
 
             if module_type == 'convolutional' or module_type == 'upsample':
                 x = self.model[i](x)
                 
+                if i in self.cache_module_index:
+                    module_cache[i] = x
 
 YOLOv3 = Darknet('../cfg/yolov3.cfg')
 

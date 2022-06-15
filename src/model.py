@@ -2,19 +2,16 @@
 Create model of YOLOv3 architecture
 '''
 
-import logging
 import torch.nn as nn
 # Test
 # from parse import parse_cfg
 
-logging.basicConfig(level=logging.INFO)
-
 def create_model(blocks):
     
     net = blocks[0]
-    logging.info('[Net]: {}'.format(net))
-    
     model = nn.ModuleList()
+    cache_module_index = []
+
     prev_filters = 3
     index = 0
     
@@ -70,11 +67,19 @@ def create_model(blocks):
             # TODO: Need to modify this since the output of route layer
             #       will influence the input of the next layer
             
-            # TODO: Maybe need to calculate cache module index here
-            #       so that we don't need to cache all the outpus of
-            #       modules which is memory expensive
-
             # EmptyLayer() class inherit from nn.Module, necessary?
+            try:
+                for layer in block['layers']:
+                    if layer < 0:
+                        cache_module_index.append(index+layer)
+                    else:
+                        cache_module_index.append(layer)
+            except:
+                layer = block['layers']
+                if layer < 0:
+                    cache_module_index.append(index+layer)
+                else:
+                    cache_module_index.append(layer)
             module.add_module('route_{}'.format(index),nn.Module())
 
         elif block['type'] == 'upsample':
@@ -82,19 +87,21 @@ def create_model(blocks):
             module.add_module('upsample_{}'.format(index),upsample)
 
         else:
-            logging.error('[ERROR]: Module type NOT FOUND; Check cfg file')
+            print('[ERROR]: Module type NOT FOUND; Check cfg file')
             assert False
     
         model.append(module)
         prev_filters = filters
         index+=1
     
-    return net, model
+    print('[Net]: {}'.format(net))
+    # print('[Model]: {}'.format(model))
+    print('[Cache Module Index]: {}'.format(cache_module_index))
 
-def get_cache_module_index(blocks):
-    pass
+    return net, model, cache_module_index
 
 # Test
 # blocks = parse_cfg('../cfg/yolov3.cfg')
-# net,model = create_model(blocks=blocks)
+# net,model,cache_module_index = create_model(blocks=blocks)
 # print('[Model]: {}'.format(model))
+# print('[Cache Module Index]: {}'.format(cache_module_index))

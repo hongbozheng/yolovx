@@ -124,8 +124,8 @@ def parse_cfg(cfg):
 
     append_block()
     logging.debug('[blocks]: {}'.format(blocks))
-    logging.info('[INFO]       : Finish parsing cfg file')
-    logging.info('[len(blocks)]: [Net]: {} + [Layer]: {}'.format(1,len(blocks)-1))
+    print('[INFO]       : Finish parsing cfg file')
+    print('[len(blocks)]: [Net]: {} + [Layer]: {}'.format(1,len(blocks)-1))
     return blocks
 
 # Test
