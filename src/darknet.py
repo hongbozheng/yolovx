@@ -36,8 +36,8 @@ class Darknet(nn.Module):
 
             if module_type == 'convolutional' or module_type == 'upsample':
                 x = self.model[i](x)
-                
-                if i in self.cache_module_index:
+            
+            if i in self.cache_module_index:
                     module_cache[i] = x
 
 YOLOv3 = Darknet('../cfg/yolov3.cfg')
@@ -46,6 +46,6 @@ def search(blocks,layer_type):
     print('[Model]: {}'.format(layer_type))
     for i in range(len(blocks)):
         if blocks[i]['type'] == layer_type:
-            print(blocks[i])
+            print(i,blocks[i])
 
-search(YOLOv3.get_blocks(),'route')
+search(YOLOv3.get_blocks()[1:],'route')

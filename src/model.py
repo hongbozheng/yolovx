@@ -13,6 +13,7 @@ def create_model(blocks):
     cache_module_index = []
 
     prev_filters = 3
+    filters_list = []
     index = 0
     
     for block in blocks:
@@ -58,28 +59,36 @@ def create_model(blocks):
         elif block['type'] == 'shortcut':
             # what is he doing with from_ in Github ???
             # EmptyLayer() class inherit from nn.Module, necessary?
+            try:
+                for layer in block['from']:
+                    cache_module_index.append(index+layer)
+            except:
+                cache_module_index.append(index+block['from'])
             module.add_module('short_cut_{}'.format(index),nn.Module())
         
         elif block['type'] == 'yolo':
             print(block['mask'])
 
         elif block['type'] == 'route':
-            # TODO: Need to modify this since the output of route layer
-            #       will influence the input of the next layer
-            
             # EmptyLayer() class inherit from nn.Module, necessary?
+            filters = 0
             try:
                 for layer in block['layers']:
                     if layer < 0:
                         cache_module_index.append(index+layer)
+                        filters += filters_list[index+layer]
                     else:
                         cache_module_index.append(layer)
+                        filters += filters_list[layer]
             except:
                 layer = block['layers']
                 if layer < 0:
                     cache_module_index.append(index+layer)
+                    filters = filters_list[index+layer]
                 else:
                     cache_module_index.append(layer)
+                    filters = filters_list(layer)
+
             module.add_module('route_{}'.format(index),nn.Module())
 
         elif block['type'] == 'upsample':
@@ -92,8 +101,10 @@ def create_model(blocks):
     
         model.append(module)
         prev_filters = filters
+        filters_list.append(filters)
         index+=1
     
+    cache_module_index.sort(reverse=False)
     print('[Net]: {}'.format(net))
     # print('[Model]: {}'.format(model))
     print('[Cache Module Index]: {}'.format(cache_module_index))
