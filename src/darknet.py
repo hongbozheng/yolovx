@@ -62,10 +62,10 @@ class Darknet(nn.Module):
         file = open(yolo_weights,'rb')
         weights_info = np.fromfile(file=file,dtype=np.int32,count=5)
         weights = np.fromfile(file=file,dtype=np.float32)
-        print(weights_info)
-        print('len(weights_info): {}'.format(len(weights_info)))
-        print(weights[5:20])
-        print('len(weights): {}'.format(len(weights)))
+        print('[weights_info]: {}'.format(weights_info))
+        # print('len(weights_info): {}'.format(len(weights_info)))
+        # print(weights[5:20])
+        print('[len(weights)]: {}'.format(len(weights)))
         
         # print('blocks: {}'.format(self.blocks))
 
@@ -122,7 +122,10 @@ class Darknet(nn.Module):
                                    .view(conv.weight.data.size())
                 conv.weight.data.copy_(conv_weight)
                 ptr += weight_num
-        print('ptr: {}'.format(ptr))
+
+        print('[ptr]: {}'.format(ptr))
+        if ptr == len(weights):
+            print('[INFO]: {} successfully loaded!'.format(yolo_weights[11:]))
 
 YOLOv3 = Darknet('../cfg/yolov3.cfg')
 YOLOv3.load_weights('../weights/yolov3.weights')
