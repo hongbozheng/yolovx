@@ -13,6 +13,7 @@ def create_model(blocks):
     cache_module_index = []
 
     prev_filters = 3
+    filters = 0
     filters_list = []
     index = 0
     
@@ -52,9 +53,18 @@ def create_model(blocks):
                 batch_norm = nn.BatchNorm2d(num_features=filters)
                 module.add_module('BatchNorm2d_{}'.format(index),batch_norm)
 
+            # may need to add more cases for other activation functions in the future
             if block['activation'] == 'leaky':
                 activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
                 module.add_module('LeakyReLU_{}'.format(index),activation_function)
+
+            # convolutional layer before yolo layer, activation function = linear
+            # if we have linear layer, conv2d bias=T/F, linear bias=T/F
+            # elif block['activation'] == 'linear':
+            #     activation_function = nn.Linear(in_features=filters,
+            #                                     out_features=filters,
+            #                                     bias=bias)
+            #     module.add_module('Linear_{}'.format(index),activation_function)
 
         elif block['type'] == 'shortcut':
             # what is he doing with from_ in Github ???
