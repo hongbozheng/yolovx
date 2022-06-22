@@ -62,18 +62,13 @@ class Darknet(nn.Module):
         file = open(yolo_weights,'rb')
         weights_info = np.fromfile(file=file,dtype=np.int32,count=5)
         weights = np.fromfile(file=file,dtype=np.float32)
-        print('[weights_info]: {}'.format(weights_info))
-        # print('len(weights_info): {}'.format(len(weights_info)))
-        # print(weights[5:20])
+        print('[weights_info]:       {}'.format(weights_info))
+        print('[pretrained weights]: {}'.format(weights))
         print('[len(weights)]: {}'.format(len(weights)))
         
-        # print('blocks: {}'.format(self.blocks))
-
         ptr = 0
         weight_num = 0
         for i in range(0,len(self.model)):
-        # for i in range(1,2):
-            # print('index: {}'.format(i))
             if self.blocks[i+1]['type'] == 'convolutional':
                 try:
                     batch_normalize = self.blocks[i+1]['batch_normalize']
@@ -123,7 +118,7 @@ class Darknet(nn.Module):
                 conv.weight.data.copy_(conv_weight)
                 ptr += weight_num
 
-        print('[ptr]: {}'.format(ptr))
+        print('[ptr]:          {}'.format(ptr))
         if ptr == len(weights):
             print('[INFO]: {} successfully loaded!'.format(yolo_weights[11:]))
 
