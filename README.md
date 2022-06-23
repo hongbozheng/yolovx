@@ -4,9 +4,9 @@ Python Implementation of YOLOv3
 
 ## Project Setup
 
-#### Environment Setup [Linux]
+#### 1. Environment Setup [Linux]
 
-##### 1. Install `conda`
+##### * Install `conda`
 
 Go to [conda >> User guide >> Installation >> Installing on Linux](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
 
@@ -26,7 +26,7 @@ source ~/.bashrc
 ```
 This will source the bash script
 
-##### 2. Create a new conda environment
+##### * Create a new conda environment
 
 Go to [conda >> User guide >> Tasks >> Managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)
 
@@ -44,7 +44,7 @@ conda activate <name>
 ```
 `<name>` name of the environment just created
 
-##### 3. Install Python Library
+##### * Install Python Library
 
 * numpy
 * torch
@@ -55,14 +55,27 @@ conda install numpy
 conda install -c pytorch pytorch
 ```
 
-#### Download cfg file
+#### 2. Download cfg file
 Download the `cfg` file for YOLOv3 from [here](https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg)
 
-#### Download pre-trained weights
+#### 3. Download pre-trained weights
 ```
 wget https://pjreddie.com/media/files/yolov3.weights
 ```
 or download [here (237MB)](https://pjreddie.com/media/files/yolov3.weights)
+
+## Implementation of YOLO
+
+#### 1. Parse `cfg` file
+[CFG Parameters in the `net` section](https://github.com/AlexeyAB/darknet/wiki/CFG-Parameters-in-the-%5Bnet%5D-section)
+
+[CFG Parameters in the different layers](https://github.com/AlexeyAB/darknet/wiki/CFG-Parameters-in-the-different-layers)
+
+#### 2. Create `model` from the parsed `cfg` file
+
+#### 3. Create darknet
+* forward pass
+* load pre-trained weights
 
 ## Test YOLOv3
 
