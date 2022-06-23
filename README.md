@@ -80,7 +80,7 @@ STILL WORKING ON IT
 
 [Implement YOLOv3 from scratch in Pytorch GitHub Repository](https://github.com/ayooshkathuria/pytorch-yolo-v3)
 
-Another `Implement YOLOv3 from scratch` tutorial
+Another `Implement YOLOv3 with Training setup from scratch` tutorial
 
 [Implement YOLOv3 with Training setup from scratch YouTube Video](https://www.youtube.com/watch?v=Grir6TZbc1M)
 
