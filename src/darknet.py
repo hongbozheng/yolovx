@@ -42,21 +42,26 @@ class Darknet(nn.Module):
             elif module_type == 'shortcut':
                 x = module_cache[i-1]
                 try:
-                    for layer in block['from']:
+                    for layer in self.blocks[i+1]['from']:
                         x += module_cache[layer]
                 except:
-                    x += module_cache[block['from']]
+                    x += module_cache[self.blocks[i+1]['from']]
             
             elif module_type == 'route':
-                x = module_cache[block['layers'][0]]
+                x = module_cache[self.blocks[i+1]['layers'][0]]
                 try:
-                    for k in range(len(block['layers'][1:])):
-                        x = torch.cat(tensors=(x,block['layers'][k]),dim=1)
+                    for k in range(len(self.blocks[i+1]['layers'][1:])):
+                        x = torch.cat(tensors=(x,self.blocks[i+1]['layers'][k]),dim=1)
                 except:
                     pass
 
             elif module_type == 'yolo':
+                input_dimension = self.net['height']
+                anchor = self.blocks[i+1]['anchors']
+                num_class = self.blocks[i+1]['classes']
+
                 # TODO: Implement yolo layer (detection layer)
+
                 pass
 
             if i in self.cache_module_index:
@@ -72,6 +77,7 @@ class Darknet(nn.Module):
         
         ptr = 0
         weight_num = 0
+
         for i in range(0,len(self.model)):
             if self.blocks[i+1]['type'] == 'convolutional':
                 try:
