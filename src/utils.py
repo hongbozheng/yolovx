@@ -6,24 +6,24 @@ def intersection_over_union(box_1, box_2, box_format='midpoint'):
     # TODO: need to remove ... since box_1 and box_2 are 1-d tensor
     if box_format == 'midpoint':
         # maybe need to change to box_1[:,0] ???
-        box1_x1 = box_1[...,0:1] - box_1[...,2:3]/2
-        box1_y1 = box_1[...,1:2] - box_1[...,3:4]/2
-        box1_x2 = box_1[...,0:1] + box_1[...,2:3]/2
-        box1_y2 = box_1[...,1:2] + box_1[...,3:4]/2
-        box2_x1 = box_2[...,0:1] - box_2[...,2:3]/2
-        box2_y1 = box_2[...,1:2] - box_2[...,3:4]/2
-        box2_x2 = box_2[...,0:1] + box_2[...,2:3]/2
-        box2_y2 = box_2[...,1:2] + box_2[...,3:4]/2
+        box1_x1 = box_1[0] - box_1[2]/2
+        box1_y1 = box_1[1] - box_1[3]/2
+        box1_x2 = box_1[0] + box_1[2]/2
+        box1_y2 = box_1[1] + box_1[3]/2
+        box2_x1 = box_2[0] - box_2[2]/2
+        box2_y1 = box_2[1] - box_2[3]/2
+        box2_x2 = box_2[0] + box_2[2]/2
+        box2_y2 = box_2[1] + box_2[3]/2
 
     if box_format == 'corner':
-        box1_x1 = box_1[...,0:1]
-        box1_y1 = box_1[...,1:2]
-        box1_x2 = box_1[...,2:3]
-        box1_y2 = box_1[...,3:4]
-        box2_x1 = box_2[...,0:1]
-        box2_y1 = box_2[...,1:2]
-        box2_x2 = box_2[...,2:3]
-        box2_y2 = box_2[...,3:4]
+        box1_x1 = box_1[0]
+        box1_y1 = box_1[1]
+        box1_x2 = box_1[2]
+        box1_y2 = box_1[3]
+        box2_x1 = box_2[0]
+        box2_y1 = box_2[1]
+        box2_x2 = box_2[2]
+        box2_y2 = box_2[3]
 
     x1 = torch.max(box1_x1,box2_x1)
     y1 = torch.max(box1_y1,box2_y1)
@@ -46,9 +46,10 @@ def non_max_suppression(class_prediction, iou_threshold, box_format='midpoint'):
     class_prediction = class_prediction[torch.sort(input=class_prediction[:,4],descending=True)[1]]
     
     for i in range(class_prediction.size(dim=0)):
-        if intersection_over_union(class_prediction[i],class_prediction[i+1]) > iou_threshold:
-            class_prediction[i+1]*=0
-
+        for k in range(class_prediction[i+1:].size(dim=0)):
+            if intersection_over_union(class_prediction[i],class_prediction[k]) > iou_threshold:
+                class_prediction[k]*=0
+    
     class_prediction[class_prediction[:,0] != 0]
 
     return class_prediction 
@@ -73,9 +74,9 @@ def get_evaluation_box(prediction, obj_score_threshold, num_class, NMS=True, iou
         highest_class_score, class_index = torch.max(image_prediction[:,5:5+num_class],dim=1)
         # maybe image_prediction[...,:5] also work ?????
         image_prediction = torch.cat(tensors=(image_prediction[:,:5],
-                                            # why he used .float() for class index ?????
-                                            class_index.float().unsqueeze(dim=1),
-                                            highest_class_score.float().unsqueeze(dim=1)),dim=1)
+                                              # why he used .float() for class index ?????
+                                              class_index.float().unsqueeze(dim=1),
+                                              highest_class_score.float().unsqueeze(dim=1)),dim=1)
 
         # i don't understand why needs try except here ?????
         image_class = torch.unique(image_prediction[:,-2])
@@ -155,6 +156,7 @@ d = torch.tensor([[1,4,7,2,3],
 e = d
 f = d
 g = d
+h = d
 sort = torch.sort(d[:,4])[1]
 print('sort: {}'.format(sort))
 d = d[torch.sort(d[:,4])[1]]
@@ -173,3 +175,11 @@ print('f: {}'.format(f))
 batch_ind = g.new(g.size(0),1).fill_(0)
 o = torch.cat((batch_ind,g),1)
 print('o: {}'.format(o))
+
+print('h: {}'.format(h))
+h = h[0]
+for i in range(h.size(0)):
+    for k in range(h[i+1:].size(0)):
+        if h[i] > h[k]:
+            print('hello')
+print('h un: {}'.format(h[0].unsqueeze(0)))
