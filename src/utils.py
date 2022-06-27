@@ -3,7 +3,7 @@ import torch
 epsilon = 1e-6
 
 def intersection_over_union(box_1, box_2, box_format='midpoint'):
-    # maybe need to remove ... since box_1 and box_2 are 1-d tensor
+    # TODO: need to remove ... since box_1 and box_2 are 1-d tensor
     if box_format == 'midpoint':
         # maybe need to change to box_1[:,0] ???
         box1_x1 = box_1[...,0:1] - box_1[...,2:3]/2
