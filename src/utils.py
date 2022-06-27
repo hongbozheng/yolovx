@@ -46,9 +46,8 @@ def non_max_suppression(bbox, iou_threshold, objectiveness_threshold, box_format
     
     # need this function ?????
 
-def get_evaluation_box(prediction,obj_score_threshold,num_class,nms=True,num_threshold=0.5):
-    obj_score_mask = (prediction[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
-    prediction *= obj_score_mask
+def get_evaluation_box(prediction,obj_score_threshold,num_class,NMS=True,num_threshold=0.5):
+    prediction *= (prediction[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
     
     # i think this is better than his way
     if torch.nonzero(prediction).numel() == 0:
@@ -56,41 +55,57 @@ def get_evaluation_box(prediction,obj_score_threshold,num_class,nms=True,num_thr
 
     for i in range(prediction.size(dim=0)):
         image_prediction = prediction[i]
-        nonzero_index = torch.nonzero(image_prediction[:,4])
-        image_prediction = image_prediction[nonzero_index.squeeze(),:].view(-1,5+num_class)
+        # nonzero_index = torch.nonzero(image_prediction[:,4])
+        image_prediction = image_prediction[torch.nonzero(image_prediction[:,4]).squeeze(),:].view(-1,5+num_class)
 
-        class_index, highest_class_score = torch.max(image_prediction[:,5:5+num_class],dim=1)
+        highest_class_score, class_index = torch.max(image_prediction[:,5:5+num_class],dim=1)
         # maybe image_prediction[...,:5] also work ?????
-        image_prediction = torch.cat(tuple=(image_prediction[:,:5],
+        image_prediction = torch.cat(tensors=(image_prediction[:,:5],
                                             # why he used .float() for class index ?????
                                             class_index.int().unsqueeze(dim=1),
                                             highest_class_score.float().unsqueeze(dim=1)),dim=1)
-       # try:
 
+        # i don't understand why needs try except here ?????
+        image_class = torch.unique(image_prediction[:,-2])
+        for c in image_class:
+            class_prediction = image_prediction*(image_prediction[:,-2]==c).float().unsqueeze(dim=1)
+            # nonzero_index = torch.nonzero(class_prediction[:,-1]).squeeze()
+            class_prediction = class_prediction[torch.nonzero(class_prediction[:,-1]).squeeze()].view(-1,7)
+            obj_score_sort_index = torch.sort(input=class_prediction[:,4],descending=True)[1]
+            class_prediction = class_prediction[obj_score_sort_index]
 
-    pass
+            if NMS:
+                non_max_suppression()
 
-a = torch.tensor([[[1,1,1,1,1],
-                   [2,2,2,2,2],
-                   [3,3,3,3,3]],
+a = torch.tensor([[[1,1,1,5,1],
+                   [1,1,1,1,2],
+                   [3,3,5,3,3]],
                   [[4,4,4,4,4],
                    [5,5,5,5,5],
-                   [6,6,6,6,6]]])
+                   [6,6,6,6,6]]],dtype=float)
 print('a[i]: {}'.format(a[0]))
 print('size a: {}'.format(a.size()))
 
 mask = (a[:,:,4] <= 2).float().unsqueeze(2)
 print('mask: {}'.format(mask))
-print('after mask: {}'.format(mask*a[0]))
+print('after mask: {}'.format(a[0]*mask))
 print('torch nonzero mask: {}'.format(torch.nonzero(mask)))
 print('check empty: {}'.format(torch.nonzero(mask).numel()==0))
-a = a*mask
+a *= (a[:,:,4] <= 2).float().unsqueeze(2)
 print('cleaned up prediction: {}'.format(a))
 
 c = a[0]
 print('c: {}'.format(c))
 nonzero_i = torch.nonzero(c[:,4])
-c = c[nonzero_i.squeeze(),:].view(-1,5)
+c = c[torch.nonzero(c[:,4]).squeeze(),:].view(-1,5)
+print('c: {}'.format(c))
+hcs, ci = torch.max(c[:,2:5],dim=1)
+print('class_index: {}'.format(ci))
+print('highest_class_score: {}'.format(hcs))
+c = torch.cat(tensors=(c[:,:2],ci.int().unsqueeze(1),hcs.float().unsqueeze(1)),dim=1)
+print('cleaned up image_pred: {}'.format(c))
+
+print('unique: {}'.format(torch.unique(c[:,-2])))
 
 box_a = a.new(a.shape)
 print('box_a: {}'.format(box_a))
@@ -106,3 +121,11 @@ max_conf, max_conf_score = torch.max(b[:,1:5],1)
 print('b: {}'.format(b))
 print('max_conf: {}'.format(max_conf))
 print('max_conf_score: {}'.format(max_conf_score.unsqueeze(dim=1)))
+
+d = torch.tensor([[1,4,7,2,3],
+                  [1,2,5,2,7],
+                  [1,6,3,2,4]])
+sort = torch.sort(d[:,4])
+print('sort: {}'.format(sort))
+d = torch.sort(d)[0]
+print('sorted: {}'.format(d))

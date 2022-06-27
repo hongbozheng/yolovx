@@ -51,7 +51,7 @@ class Darknet(nn.Module):
                 x = module_cache[block['layers'][0]]
                 try:
                     for k in range(len(block['layers'][1:])):
-                        x = torch.cat(tuple=(x,block['layers'][k]),dim=1)
+                        x = torch.cat(tensors=(x,block['layers'][k]),dim=1)
                 except:
                     pass
 
