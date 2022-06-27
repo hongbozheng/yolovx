@@ -47,12 +47,18 @@ def non_max_suppression(bbox, iou_threshold, objectiveness_threshold, box_format
     # need this function ?????
 
 def get_evaluation_box(prediction,obj_score_threshold,num_class,nms=True,num_threshold=0.5):
-    # maybe prediction[...,4] also work ?????
     obj_score_mask = (prediction[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
     prediction *= obj_score_mask
+    
+    # i think this is better than his way
+    if torch.nonzero(prediction).numel() == 0:
+        return 0
 
     for i in range(prediction.size(dim=0)):
-        nonzero_index = torch.nonzero(prediction[i][:,4])
+        image_prediction = prediction[i]
+        nonzero_index = torch.nonzero(image_prediction[:,4])
+        image_prediction = image_prediction[nonzero_index.squeeze(),:].view(-1,5+num_class)
+
         class_index, highest_class_score = torch.max(image_prediction[:,5:5+num_class],dim=1)
         # maybe image_prediction[...,:5] also work ?????
         image_prediction = torch.cat(tuple=(image_prediction[:,:5],
@@ -66,16 +72,25 @@ def get_evaluation_box(prediction,obj_score_threshold,num_class,nms=True,num_thr
 
 a = torch.tensor([[[1,1,1,1,1],
                    [2,2,2,2,2],
-                   [3,3,3,3,3]]])
-print('a: {}'.format(a))
+                   [3,3,3,3,3]],
+                  [[4,4,4,4,4],
+                   [5,5,5,5,5],
+                   [6,6,6,6,6]]])
+print('a[i]: {}'.format(a[0]))
 print('size a: {}'.format(a.size()))
 
-mask = (a[:,:,4] >= 4).float().unsqueeze(2)
+mask = (a[:,:,4] <= 2).float().unsqueeze(2)
 print('mask: {}'.format(mask))
-print('check nonzero: {}'.format(torch.nonzero(mask)))
+print('after mask: {}'.format(mask*a[0]))
+print('torch nonzero mask: {}'.format(torch.nonzero(mask)))
+print('check empty: {}'.format(torch.nonzero(mask).numel()==0))
+a = a*mask
+print('cleaned up prediction: {}'.format(a))
 
-prediction = a*mask
-print('prediction: {}'.format(prediction))
+c = a[0]
+print('c: {}'.format(c))
+nonzero_i = torch.nonzero(c[:,4])
+c = c[nonzero_i.squeeze(),:].view(-1,5)
 
 box_a = a.new(a.shape)
 print('box_a: {}'.format(box_a))
