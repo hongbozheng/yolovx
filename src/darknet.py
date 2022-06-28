@@ -5,7 +5,7 @@ Implementation of YOLOv3 Architecture
 import logging
 import torch
 import torch.nn as nn
-from parse import parse_cfg
+from utils import parse_cfg
 from model import create_model
 import numpy as np
 
