@@ -80,7 +80,7 @@ def create_model(blocks):
             module.add_module('short_cut_{}'.format(index),nn.Module())
         
         elif block['type'] == 'yolo':
-            print(block['mask'])
+            module.add_module('yolo_{}'.format(index),nn.Module())
 
         elif block['type'] == 'route':
             # EmptyLayer() class inherit from nn.Module, necessary?
