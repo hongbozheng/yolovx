@@ -32,6 +32,7 @@ class Darknet(nn.Module):
     def forward(self,x):
        
         module_cache = {}
+        write = False
 
         for i in range(len(model)):
             module_type = model[i]['type']
@@ -61,11 +62,22 @@ class Darknet(nn.Module):
                 num_class = self.blocks[i+1]['classes']
 
                 # TODO: Implement yolo layer (detection layer)
+                x = prediction_transformation(x=x.data,input_dimension=input_dimension,anchor=anchor,
+                                              num_class=num_class,CUDA=True)
+                
+                # don't understand
+                if type(x) == int:
+                    continue
 
-                pass
-
+                if not write:
+                    detection = x
+                else:
+                    detection = torch.cat(tensors=(detection,x),dim=1)
+                
             if i in self.cache_module_index:
                     module_cache[i] = x
+
+        return detection
 
     def load_weights(self,yolo_weights):
         file = open(yolo_weights,'rb')
@@ -134,6 +146,7 @@ class Darknet(nn.Module):
 
 YOLOv3 = Darknet('../cfg/yolov3.cfg')
 YOLOv3.load_weights('../weights/yolov3.weights')
+# print(YOLOv3.get_blocks())
 
 def search(blocks,layer_type):
     print('[Model]: {}'.format(layer_type))

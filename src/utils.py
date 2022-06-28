@@ -2,6 +2,44 @@ import torch
 
 epsilon = 1e-6
 
+def prediction_transformation(prediction, input_dimension, anchors, num_class, CUDA=True):
+    batch_size = prediction.size(dim=0)
+    # i think both dim=1 & dim=2 will work
+    # eg. 608//7=76
+    stride = input_dimension//prediction.size(dim=1)
+    # eg. 608//76=7 ????? 
+    grid_size = input_dimension//stride
+    bbox_attribute = 5+num_class
+    anchor = [(a[0]/stride,a[1]/stride) for a in anchor]
+
+    prediction = prediction.view(batch_size, bbox_attribute*len(anchor), grid_size*grid_size)
+    prediction = torch.transpose(prediction,dim0=1,dim1=2).contiguous()
+    prediction = prediction.view(batch_size, grid_size*grid_size*len(anchor), bbox_attribute)
+    
+    # i think [...,0] will also work
+    prediction[:,:,0] = torch.sigmoid(prediction[:,:,0])
+    prediction[:,:,1] = torch.sigmoid(prediction[:,:,1])
+    prediction[:,:,4] = torch.sigmoid(prediction[:,:,4])
+
+    grid_length = np.arange(grid_size)
+    a,b = torch.meshgrid(grid_length,grid_length)
+
+    x_offset = torch.FloatTensor(a).view(-1,1)
+    y_offset = torch.FloatTensor(b).view(-1,1)
+    
+    x_y_offset = torch.cat(tensors=(x_offset,y_offset),dim=1).repeat(1,len(anchor)).unsqueeze(dim=0)
+
+    prediction[:,:,:2] += x_y_offset
+
+    anchor = torch.FloatTensor(anchor)
+    anchor = anchor.repeat(grid_size*grid_size,1).unsqueeze(0)
+    prediction[:,:,2:4] = torch.exp(prediction[:,:,2:4])*anchor
+
+    prediction[:,:,5:5+num_class] = torch.sigmoid(prediction[:,:,5:5+num_class])
+    prediction[:,:,:4] *= stride
+    
+    return prediction
+
 def intersection_over_union(box_1, box_2, box_format='midpoint'):
     # TODO: need to remove ... since box_1 and box_2 are 1-d tensor
     if box_format == 'midpoint':
@@ -57,6 +95,7 @@ def non_max_suppression(class_prediction, iou_threshold, box_format='midpoint'):
     # yes indeed
 
 def get_evaluation_box(prediction, obj_score_threshold, num_class, NMS=True, iou_threshold=0.5, box_format='midpoint'):
+    write = False
     prediction *= (prediction[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
     
     # i think this is better than his way
@@ -183,3 +222,24 @@ for i in range(h.size(0)):
         if h[i] > h[k]:
             print('hello')
 print('h un: {}'.format(h[0].unsqueeze(0)))
+
+pred = torch.tensor([[[1,1,1,1,1],
+                      [2,2,2,2,2],
+                      [3,3,3,3,3],
+                      [4,4,4,4,4],
+                      [5,5,5,5,5]]])
+
+input_dim = 608
+print('dim pred: {}'.format(pred.size()))
+print('transpose: {}'.format(torch.transpose(pred,1,2).contiguous()))
+bs = pred.size(0)
+print('bs: {}'.format(bs))
+stride = input_dim//pred.size(2)
+print('stride: {}'.format(stride))
+grid_size = input_dim//stride
+print('grid_size: {}'.format(grid_size))
+bbox_attr = 3
+num_anchor = 9
+
+pred = pred.view(bs,bbox_attr*9,grid_size**2)
+print('pred: {}'.format(pred))
