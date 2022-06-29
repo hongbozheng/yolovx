@@ -1,6 +1,7 @@
 import logging
 from enum import IntEnum
 import torch
+import numpy as np
 
 epsilon = 1e-6
 
@@ -131,19 +132,20 @@ def parse_cfg(cfg):
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$ prediction transformation for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def prediction_transformation(prediction, input_dimension, anchors, num_class, CUDA=True):
+def prediction_transformation(prediction, input_dimension, anchor, num_class, CUDA=True):
+    print('prediction size: {}'.format(prediction.size()))
     batch_size = prediction.size(dim=0)
     # i think both dim=1 & dim=2 will work
     # eg. 608//7=76
-    stride = input_dimension//prediction.size(dim=1)
+    stride = input_dimension//prediction.size(dim=2)
     # eg. 608//76=7 ????? 
     grid_size = input_dimension//stride
     bbox_attribute = 5+num_class
     anchor = [(a[0]/stride,a[1]/stride) for a in anchor]
 
-    prediction = prediction.view(batch_size, bbox_attribute*len(anchor), grid_size*grid_size)
+    prediction = prediction.view(batch_size, bbox_attribute*3, grid_size*grid_size)
     prediction = torch.transpose(prediction,dim0=1,dim1=2).contiguous()
-    prediction = prediction.view(batch_size, grid_size*grid_size*len(anchor), bbox_attribute)
+    prediction = prediction.view(batch_size, grid_size*grid_size*3, bbox_attribute)
     
     # i think [...,0] will also work
     prediction[:,:,0] = torch.sigmoid(prediction[:,:,0])
@@ -156,7 +158,7 @@ def prediction_transformation(prediction, input_dimension, anchors, num_class, C
     x_offset = torch.FloatTensor(a).view(-1,1)
     y_offset = torch.FloatTensor(b).view(-1,1)
     
-    x_y_offset = torch.cat(tensors=(x_offset,y_offset),dim=1).repeat(1,len(anchor)).unsqueeze(dim=0)
+    x_y_offset = torch.cat(tensors=(x_offset,y_offset),dim=1).repeat(1,3).unsqueeze(dim=0)
 
     prediction[:,:,:2] += x_y_offset
 

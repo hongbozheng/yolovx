@@ -6,8 +6,11 @@ import logging
 import torch
 import torch.nn as nn
 from utils import parse_cfg
+from utils import prediction_transformation
 from model import create_model
 import numpy as np
+import cv2
+from torch.autograd import Variable
 
 # logging.basicConfig(level=logging.DEBUG)
 
@@ -34,8 +37,8 @@ class Darknet(nn.Module):
         module_cache = {}
         write = False
 
-        for i in range(len(model)):
-            module_type = model[i]['type']
+        for i in range(len(self.model)):
+            module_type = self.blocks[i+1]['type']
 
             if module_type == 'convolutional' or module_type == 'upsample':
                 x = self.model[i](x)
@@ -49,10 +52,13 @@ class Darknet(nn.Module):
                     x += module_cache[self.blocks[i+1]['from']]
             
             elif module_type == 'route':
-                x = module_cache[self.blocks[i+1]['layers'][0]]
+                try:
+                    x = module_cache[self.blocks[i+1]['layers'][0]]
+                except:
+                    x = module_cache[self.blocks[i+1]['layers']]
                 try:
                     for k in range(len(self.blocks[i+1]['layers'][1:])):
-                        x = torch.cat(tensors=(x,self.blocks[i+1]['layers'][k]),dim=1)
+                        x = torch.cat(tensors=(x,module_cache[self.blocks[i+1]['layers'][k+1]]),dim=1)
                 except:
                     pass
 
@@ -62,7 +68,7 @@ class Darknet(nn.Module):
                 num_class = self.blocks[i+1]['classes']
 
                 # TODO: Implement yolo layer (detection layer)
-                x = prediction_transformation(x=x.data,input_dimension=input_dimension,anchor=anchor,
+                x = prediction_transformation(prediction=x.data,input_dimension=input_dimension,anchor=anchor,
                                               num_class=num_class,CUDA=True)
                 
                 # don't understand
@@ -76,7 +82,6 @@ class Darknet(nn.Module):
                 
             if i in self.cache_module_index:
                     module_cache[i] = x
-
         return detection
 
     def load_weights(self,yolo_weights):
@@ -144,9 +149,43 @@ class Darknet(nn.Module):
         if ptr == len(weights):
             print('[INFO]: {} successfully loaded!'.format(yolo_weights[11:]))
 
+def get_test_input():
+    img = cv2.imread("../dog-cycle-car.png")
+    img = cv2.resize(img, (416,416))          #Resize to the input dimension
+    img_ =  img[:,:,::-1].transpose((2,0,1))  # BGR -> RGB | H X W C -> C X H X W 
+    img_ = img_[np.newaxis,:,:,:]/255.0       #Add a channel at 0 (for batch) | Normalise
+    img_ = torch.from_numpy(img_).float()     #Convert to float
+    img_ = Variable(img_)                     # Convert to Variable
+    return img_
+
+'''
+a = torch.tensor([[1,1,1],
+                  [2,2,2],
+                  [3,3,3]])
+b = torch.tensor([[4,4,4],
+                  [5,5,5],
+                  [6,6,6]])
+a = torch.cat((a,a),1)
+print('a: {}'.format(a))
+'''
+
 YOLOv3 = Darknet('../cfg/yolov3.cfg')
 YOLOv3.load_weights('../weights/yolov3.weights')
+inp = get_test_input()
+pred = YOLOv3(inp)
+print(pred)
 # print(YOLOv3.get_blocks())
+
+'''
+a = torch.tensor([[1,1,1],
+                  [2,2,2],
+                  [3,3,3]])
+b = torch.tensor([[4,4,4],
+                  [5,5,5],
+                  [6,6,6]])
+a = torch.cat((a,b),0)
+print('a: {}'.format(a))
+'''
 
 def search(blocks,layer_type):
     print('[Model]: {}'.format(layer_type))
