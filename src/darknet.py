@@ -77,11 +77,16 @@ class Darknet(nn.Module):
 
                 if not write:
                     detection = x
+                    write = 1
+                    print('dectection dim: {}'.format(detection.size()))
                 else:
                     detection = torch.cat(tensors=(detection,x),dim=1)
+                    print('cat')
+                    print('dectection dim-: {}'.format(detection.size()))
                 
             if i in self.cache_module_index:
                     module_cache[i] = x
+            
         return detection
 
     def load_weights(self,yolo_weights):

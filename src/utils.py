@@ -133,7 +133,7 @@ def parse_cfg(cfg):
 $$$$$$$$$$$$$$$$$$$$$$$$$ prediction transformation for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def prediction_transformation(prediction, input_dimension, anchor, num_class, CUDA=True):
-    print('prediction size: {}'.format(prediction.size()))
+    print('prediction_size: {}'.format(prediction.size()))
     batch_size = prediction.size(dim=0)
     # i think both dim=1 & dim=2 will work
     # eg. 608//7=76
@@ -143,9 +143,20 @@ def prediction_transformation(prediction, input_dimension, anchor, num_class, CU
     bbox_attribute = 5+num_class
     anchor = [(a[0]/stride,a[1]/stride) for a in anchor]
 
+    if grid_size == 53:
+        grid_size = 52
+
     prediction = prediction.view(batch_size, bbox_attribute*3, grid_size*grid_size)
+    print('pred after view: {}'.format(prediction.size()))
     prediction = torch.transpose(prediction,dim0=1,dim1=2).contiguous()
+    print('pred over: {}'.format(prediction.size()))
+    prediction[:,:,0] = torch.sigmoid(prediction[:,:,0])
+    prediction[:,:,1] = torch.sigmoid(prediction[:,:,1])
+    prediction[:,:,4] = torch.sigmoid(prediction[:,:,4])
+
+    '''
     prediction = prediction.view(batch_size, grid_size*grid_size*3, bbox_attribute)
+    print('pred over: {}'.format(prediction.size()))
     
     # i think [...,0] will also work
     prediction[:,:,0] = torch.sigmoid(prediction[:,:,0])
@@ -153,7 +164,7 @@ def prediction_transformation(prediction, input_dimension, anchor, num_class, CU
     prediction[:,:,4] = torch.sigmoid(prediction[:,:,4])
 
     grid_length = np.arange(grid_size)
-    a,b = torch.meshgrid(grid_length,grid_length)
+    a,b = np.meshgrid(grid_length,grid_length)
 
     x_offset = torch.FloatTensor(a).view(-1,1)
     y_offset = torch.FloatTensor(b).view(-1,1)
@@ -168,7 +179,8 @@ def prediction_transformation(prediction, input_dimension, anchor, num_class, CU
 
     prediction[:,:,5:5+num_class] = torch.sigmoid(prediction[:,:,5:5+num_class])
     prediction[:,:,:4] *= stride
-    
+    '''
+
     return prediction
 
 '''
