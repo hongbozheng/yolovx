@@ -121,9 +121,8 @@ def create_model(blocks):
     cache_module_index.sort(reverse=False)
     print('[INFO]: Finish creating model')
     print('[Net]:  {}'.format(net))
-    print('[Model]: {}'.format(model))
+    # print('[Model]: {}'.format(model))
     print('[Cache Module Index]: {}'.format(cache_module_index))
-    print('filter: {}'.format(filters_list[86:89]))
     return net, model, cache_module_index
 
 # Test
