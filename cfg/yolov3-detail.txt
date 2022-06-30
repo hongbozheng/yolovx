@@ -1,0 +1,957 @@
+[net]
+# Testing
+batch=1
+subdivisions=1
+# Training
+# batch=64
+# subdivisions=16
+width= 320
+height = 320
+channels=3
+momentum=0.9
+decay=0.0005
+angle=0
+saturation = 1.5
+exposure = 1.5
+hue=.1
+
+learning_rate=0.001
+burn_in=1000
+max_batches = 500200
+policy=steps
+steps=400000,450000
+scales=.1,.1
+
+[convolutional 0]
+# C x H x W = 32 x 416 x 416
+batch_normalize=1
+filters=32
+size=3
+stride=1
+pad=1
+activation=leaky
+
+# Downsample
+
+[convolutional 1]
+# C x H x W = 64 x 208 x 208
+batch_normalize=1
+filters=64
+size=3
+stride=2
+pad=1
+activation=leaky
+
+################################### x 1
+
+[convolutional 2]
+# C x H x W = 32 x 208 x 208
+batch_normalize=1
+filters=32
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 3]
+# C x H x W = 64 x 208 x 208
+batch_normalize=1
+filters=64
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 0]
+# Residual
+# [convolutional 1] + [convolutional 3]
+# C x H x W = 64 x 208 x 208
+from=-3
+activation=linear
+
+###################################
+
+# Downsample
+
+[convolutional 4]
+# C x H x W = 128 x 104 x 104
+batch_normalize=1
+filters=128
+size=3
+stride=2
+pad=1
+activation=leaky
+
+################################### x 2
+
+[convolutional 5]
+# C x H x W = 64 x 104 x 104
+batch_normalize=1
+filters=64
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 6]
+# C x H x W = 128 x 104 x 104
+batch_normalize=1
+filters=128
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 1]
+# Residual
+# [convolutional 4] + [convolutional 6]
+# C x H x W = 128 x 104 x 104
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 7]
+# C x H x W = 64 x 104 x 104
+batch_normalize=1
+filters=64
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 8]
+# C x H x W = 128 x 104 x 104
+batch_normalize=1
+filters=128
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 2]
+# Residual
+# [shortcut 1] + [convolutional 8]
+# C x H x W = 128 x 104 x 104
+from=-3
+activation=linear
+
+###################################
+
+# Downsample
+
+[convolutional 9]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=2
+pad=1
+activation=leaky
+
+################################### x 8
+
+[convolutional 10]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 11]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 3]
+# Residual
+# [convolutional 9] + [convolutional 11]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 12]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 13]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 4]
+# Residual
+# [shortcut 3] + [convolutional 13]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 14]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 15]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 5]
+# Residual
+# [shortcut 4] + [convolutional 15]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 16]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 17]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 6]
+# Residual
+# [shortcut 5] + [convolutional 17]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 18]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 19]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 7]
+# Residual
+# [shortcut 6] + [convolutional 19]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 20]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 21]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 8]
+# Residual
+# [shortcut 7] + [convolutional 21]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 22]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 23]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 9]
+# Residual
+# [shortcut 8] + [convolutional 23]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 24]
+# C x H x W = 128 x 52 x 52
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 25]
+# C x H x W = 256 x 52 x 52
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 10]
+# Residual
+# [shortcut 9] + [convolutional 25]
+# C x H x W = 256 x 52 x 52
+from=-3
+activation=linear
+
+###################################
+
+# Downsample
+
+[convolutional 26]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=2
+pad=1
+activation=leaky
+
+################################### x 8
+
+[convolutional 27]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 28]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 11]
+# Residual
+# [convolutional 26] + [convolutional 28]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 29]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 30]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 12]
+# Residual
+# [shortcut 26] + [convolutional 28]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 31]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 32]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 13]
+# Residual
+# [shortcut 12] + [convolutional 32]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 33]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 34]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 14]
+# Residual
+# [shortcut 13] + [convolutional 34]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 35]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 36]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 15]
+# Residual
+# [shortcut 14] + [convolutional 36]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 37]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 38]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 16]
+# Residual
+# [shortcut 15] + [convolutional 38]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 39]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 40]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 17]
+# Residual
+# [shortcut 16] + [convolutional 40]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 41]
+# C x H x W = 256 x 26 x 26
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 42]
+# C x H x W = 512 x 26 x 26
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 18]
+# Residual
+# [shortcut 17] + [convolutional 42]
+# C x H x W = 512 x 26 x 26
+from=-3
+activation=linear
+
+###################################
+
+# Downsample
+
+[convolutional 43]
+# C x H x W = 1024 x 13 x 13
+batch_normalize=1
+filters=1024
+size=3
+stride=2
+pad=1
+activation=leaky
+
+################################### x 4
+
+[convolutional 44]
+# C x H x W = 512 x 13 x 13
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 45]
+# C x H x W = 1024 x 13 x 13
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 19]
+# Residual
+# [convolutional 43] + [convolutional 45]
+# C x H x W = 1024 x 13 x 13
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 46]
+# C x H x W = 512 x 13 x 13
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 47]
+# C x H x W = 1024 x 13 x 13
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 20]
+# Residual
+# [shortcut 19] + [convolutional 47]
+# C x H x W = 1024 x 13 x 13
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 48]
+# C x H x W = 512 x 13 x 13
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 49]
+# C x H x W = 1024 x 13 x 13
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 21]
+# Residual
+# [shortcut 20] + [convolutional 49]
+# C x H x W = 1024 x 13 x 13
+from=-3
+activation=linear
+
+#--##--##--##--##--#
+
+[convolutional 50]
+# C x H x W = 512 x 13 x 13
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional 51]
+# C x H x W = 1024 x 13 x 13
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut 22]
+# Residual
+# [shortcut 21] + [convolutional 51]
+# C x H x W = 1024 x 13 x 13
+from=-3
+activation=linear
+
+################################### DarkNet-53 End
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=1024
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=1024
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=1024
+activation=leaky
+
+[convolutional]
+size=1
+stride=1
+pad=1
+filters=255
+activation=linear
+
+
+[yolo]
+mask = 6,7,8
+anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326
+classes=80
+num=9
+jitter=.3
+ignore_thresh = .5
+truth_thresh = 1
+random=1
+
+
+[route]
+layers = -4
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[upsample]
+stride=2
+
+[route]
+layers = -1, 61
+
+
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=512
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=512
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=512
+activation=leaky
+
+[convolutional]
+size=1
+stride=1
+pad=1
+filters=255
+activation=linear
+
+
+[yolo]
+mask = 3,4,5
+anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326
+classes=80
+num=9
+jitter=.3
+ignore_thresh = .5
+truth_thresh = 1
+random=1
+
+
+
+[route]
+layers = -4
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[upsample]
+stride=2
+
+[route]
+layers = -1, 36
+
+
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=256
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=256
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=256
+activation=leaky
+
+[convolutional]
+size=1
+stride=1
+pad=1
+filters=255
+activation=linear
+
+
+[yolo]
+mask = 0,1,2
+anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326
+classes=80
+num=9
+jitter=.3
+ignore_thresh = .5
+truth_thresh = 1
+random=1
