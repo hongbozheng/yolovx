@@ -861,7 +861,7 @@ pad=1
 filters=255
 activation=linear
 
-
+# 82
 [yolo 0]
 mask = 6,7,8
 anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326
@@ -872,13 +872,15 @@ ignore_thresh = .5
 truth_thresh = 1
 random=1
 
-
+# 83
 [route 0]
 # identical [convolutional 56]
 # C x H x W = 512 x 13 x 13
 layers = -4
 
+# 84
 [convolutional 59]
+# C x H x W = 256 x 13 x 13
 batch_normalize=1
 filters=256
 size=1
@@ -886,15 +888,21 @@ stride=1
 pad=1
 activation=leaky
 
+# 85
 [upsample 0]
+# C x H x W = 256 x 26 x 26
 stride=2
 
+# 86
 [route 1]
+# cat [shortcut 18]		  [upsample 0]
+# cat [C x H x W = 512 x 26 x 26] [# C x H x W = 256 x 26 x 26]
+# C x H x W = 768 x 26 x 26
 layers = -1, 61
 
-
-
-[convolutional]
+# 87
+[convolutional 60]
+# C x H x W = 256 x 26 x 26
 batch_normalize=1
 filters=256
 size=1
@@ -902,7 +910,9 @@ stride=1
 pad=1
 activation=leaky
 
-[convolutional]
+# 88
+[convolutional 61]
+# C x H x W = 256 x 26 x 26
 batch_normalize=1
 size=3
 stride=1
@@ -910,7 +920,9 @@ pad=1
 filters=512
 activation=leaky
 
-[convolutional]
+# 89
+[convolutional 62]
+# C x H x W = 256 x 26 x 26
 batch_normalize=1
 filters=256
 size=1
@@ -918,7 +930,9 @@ stride=1
 pad=1
 activation=leaky
 
-[convolutional]
+# 90
+[convolutional 63]
+# C x H x W = 512 x 26 x 26
 batch_normalize=1
 size=3
 stride=1
@@ -926,7 +940,9 @@ pad=1
 filters=512
 activation=leaky
 
-[convolutional]
+# 91
+[convolutional 64]
+# C x H x W = 256 x 26 x 26
 batch_normalize=1
 filters=256
 size=1
@@ -934,7 +950,9 @@ stride=1
 pad=1
 activation=leaky
 
-[convolutional]
+# 92
+[convolutional 65]
+# C x H x W = 512 x 26 x 26
 batch_normalize=1
 size=3
 stride=1
@@ -942,15 +960,17 @@ pad=1
 filters=512
 activation=leaky
 
-[convolutional]
+# 93
+[convolutional 66]
+# C x H x W = 255 x 26 x 26
 size=1
 stride=1
 pad=1
 filters=255
 activation=linear
 
-
-[yolo]
+# 94
+[yolo 1]
 mask = 3,4,5
 anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326
 classes=80
@@ -960,12 +980,15 @@ ignore_thresh = .5
 truth_thresh = 1
 random=1
 
-
-
+# 95
 [route]
+# identical [convolutional 64]
+# C x H x W = 256 x 26 x 26
 layers = -4
 
-[convolutional]
+# 96
+[convolutional 67]
+# C x H x W = 128 x 26 x 26
 batch_normalize=1
 filters=128
 size=1
@@ -973,15 +996,21 @@ stride=1
 pad=1
 activation=leaky
 
-[upsample]
+# 97
+[upsample 1]
+# C x H x W = 128 x 52 x 52
 stride=2
 
+# 98
 [route]
+# cat [shortcut 10]		  [upsample 1]
+# cat [C x H x W = 256 x 52 x 52] [# C x H x W = 128 x 52 x 52]
+# C x H x W = 384 x 52 x 52
 layers = -1, 36
 
-
-
-[convolutional]
+# 99
+[convolutional 68]
+# C x H x W = 128 x 52 x 52
 batch_normalize=1
 filters=128
 size=1
@@ -989,7 +1018,9 @@ stride=1
 pad=1
 activation=leaky
 
-[convolutional]
+# 100
+[convolutional 69]
+# C x H x W = 256 x 52 x 52
 batch_normalize=1
 size=3
 stride=1
@@ -997,7 +1028,9 @@ pad=1
 filters=256
 activation=leaky
 
-[convolutional]
+# 101
+[convolutional 70]
+# C x H x W = 128 x 52 x 52
 batch_normalize=1
 filters=128
 size=1
@@ -1005,7 +1038,9 @@ stride=1
 pad=1
 activation=leaky
 
-[convolutional]
+# 102
+[convolutional 71]
+# C x H x W = 256 x 52 x 52
 batch_normalize=1
 size=3
 stride=1
@@ -1013,7 +1048,9 @@ pad=1
 filters=256
 activation=leaky
 
-[convolutional]
+# 103
+[convolutional 72]
+# C x H x W = 128 x 52 x 52
 batch_normalize=1
 filters=128
 size=1
@@ -1021,7 +1058,9 @@ stride=1
 pad=1
 activation=leaky
 
-[convolutional]
+# 104
+[convolutional 73]
+# C x H x W = 256 x 52 x 52
 batch_normalize=1
 size=3
 stride=1
@@ -1029,15 +1068,17 @@ pad=1
 filters=256
 activation=leaky
 
-[convolutional]
+# 105
+[convolutional 74]
+# C x H x W = 255 x 52 x 52
 size=1
 stride=1
 pad=1
 filters=255
 activation=linear
 
-
-[yolo]
+# 106
+[yolo 2]
 mask = 0,1,2
 anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326
 classes=80
