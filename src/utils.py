@@ -130,15 +130,14 @@ def parse_cfg(cfg):
     return blocks
 
 '''
-$$$$$$$$$$$$$$$$$$$$$$$$$ prediction transformation for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def prediction_transformation(prediction, input_dimension, anchor, num_class, CUDA=True):
-    # print('prediction_size: {}'.format(prediction.size()))
-    batch_size = prediction.size(dim=0)
-    # i think both dim=1 & dim=2 will work
-    # eg. 608//7=76
-    stride = input_dimension//prediction.size(dim=2)
-    # eg. 608//76=7 ????? 
+def detection_postprocessing(detection, input_dimension, anchor, num_class, CUDA=True):
+    detection = torch.transpose(detection,dim0=1,dim1=2)
+    detection = torch.transpose(detection,dim0=2,dim1=3)
+    print(detection.size())
+    batch_size = detection.size(dim=0)
+    grid_scale = detection.size(dim=2)
     grid_size = input_dimension//stride
     bbox_attribute = 5+num_class
     anchor = [(a[0]/stride,a[1]/stride) for a in anchor]

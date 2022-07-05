@@ -6,12 +6,8 @@ import logging
 import torch
 import torch.nn as nn
 from utils import parse_cfg
-from utils import prediction_transformation
 from model import create_model
 import numpy as np
-import cv2
-from torch.autograd import Variable
-
 # logging.basicConfig(level=logging.DEBUG)
 
 class Darknet(nn.Module):
@@ -34,7 +30,7 @@ class Darknet(nn.Module):
 
     def forward(self,x):
         module_cache = {}
-        detection_cache = {}
+        detection = []
         write = False
 
         for i in range(len(self.model)):
@@ -64,7 +60,8 @@ class Darknet(nn.Module):
                     pass
 
             elif module_type == 'yolo':
-                
+                detection.append((i,x))
+                '''
                 input_dimension = self.net['height']
                 anchor = self.blocks[i+1]['anchors']
                 num_class = self.blocks[i+1]['classes']
@@ -82,7 +79,7 @@ class Darknet(nn.Module):
                     write = 1
                 else:
                     detection = torch.cat(tensors=(detection,x),dim=1)
-
+                '''
             if i in self.cache_module_index:
                     module_cache[i] = x
             
@@ -152,7 +149,7 @@ class Darknet(nn.Module):
         print('[ptr]:          {}'.format(ptr))
         if ptr == len(weights):
             print('[INFO]: {} successfully loaded!'.format(yolo_weights[11:]))
-
+'''
 def get_test_input():
     img = cv2.imread("../dog-cycle-car.png")
     img = cv2.resize(img, (416,416))          #Resize to the input dimension
@@ -161,6 +158,7 @@ def get_test_input():
     img_ = torch.from_numpy(img_).float()     #Convert to float
     img_ = Variable(img_)                     # Convert to Variable
     return img_
+'''
 
 '''
 a = torch.tensor([[1,1,1],
@@ -173,13 +171,17 @@ a = torch.cat((a,a),1)
 print('a: {}'.format(a))
 '''
 
+'''
 YOLOv3 = Darknet('../cfg/yolov3.cfg')
 YOLOv3.load_weights('../weights/yolov3.weights')
 inp = get_test_input()
 pred = YOLOv3.forward(inp)
-print(pred)
-print(pred.size())
+# print(pred)
+print(pred[0][1].size())
+print(pred[1][1].size())
+print(pred[2][1].size())
 # print(YOLOv3.get_blocks())
+'''
 
 '''
 a = torch.tensor([[1,1,1],
