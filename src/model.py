@@ -16,13 +16,10 @@ def create_model(blocks):
     filters = 0
     filters_list = []
     index = 0
-    
-    for block in blocks:
+
+    for layer_index,block in enumerate(blocks[1:]):
         module = nn.Sequential()
-
-        if block['type'] == 'net':
-            continue
-
+        
         if block['type'] == 'convolutional':
             try:
                 batch_normalize = block['batch_normalize']
@@ -69,7 +66,7 @@ def create_model(blocks):
         elif block['type'] == 'shortcut':
             # what is he doing with from_ in Github ???
             # EmptyLayer() class inherit from nn.Module, necessary?
-            cache_module_index.append(index-1)
+            # cache_module_index.append(index-1)
             try:
                 for i in range(len(block['from'])):
                     block['from'][i] += index
@@ -80,6 +77,7 @@ def create_model(blocks):
             module.add_module('short_cut_{}'.format(index),nn.Module())
         
         elif block['type'] == 'yolo':
+            # cache_module_index.append(layer_index)
             module.add_module('yolo_{}'.format(index),nn.Module())
 
         elif block['type'] == 'route':

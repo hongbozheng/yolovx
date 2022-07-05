@@ -33,18 +33,19 @@ class Darknet(nn.Module):
         return self.cache_module_index
 
     def forward(self,x):
-       
         module_cache = {}
+        detection_cache = {}
         write = False
 
         for i in range(len(self.model)):
+            
             module_type = self.blocks[i+1]['type']
 
             if module_type == 'convolutional' or module_type == 'upsample':
                 x = self.model[i](x)
 
             elif module_type == 'shortcut':
-                x = module_cache[i-1]
+                # x = module_cache[i-1]
                 try:
                     for layer in self.blocks[i+1]['from']:
                         x += module_cache[layer]
@@ -63,6 +64,7 @@ class Darknet(nn.Module):
                     pass
 
             elif module_type == 'yolo':
+                
                 input_dimension = self.net['height']
                 anchor = self.blocks[i+1]['anchors']
                 num_class = self.blocks[i+1]['classes']
@@ -78,12 +80,9 @@ class Darknet(nn.Module):
                 if not write:
                     detection = x
                     write = 1
-                    print('dectection dim: {}'.format(detection.size()))
                 else:
                     detection = torch.cat(tensors=(detection,x),dim=1)
-                    print('cat')
-                    print('dectection dim-: {}'.format(detection.size()))
-                
+
             if i in self.cache_module_index:
                     module_cache[i] = x
             
@@ -177,8 +176,9 @@ print('a: {}'.format(a))
 YOLOv3 = Darknet('../cfg/yolov3.cfg')
 YOLOv3.load_weights('../weights/yolov3.weights')
 inp = get_test_input()
-pred = YOLOv3(inp)
+pred = YOLOv3.forward(inp)
 print(pred)
+print(pred.size())
 # print(YOLOv3.get_blocks())
 
 '''

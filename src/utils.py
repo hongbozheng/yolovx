@@ -133,7 +133,7 @@ def parse_cfg(cfg):
 $$$$$$$$$$$$$$$$$$$$$$$$$ prediction transformation for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def prediction_transformation(prediction, input_dimension, anchor, num_class, CUDA=True):
-    print('prediction_size: {}'.format(prediction.size()))
+    # print('prediction_size: {}'.format(prediction.size()))
     batch_size = prediction.size(dim=0)
     # i think both dim=1 & dim=2 will work
     # eg. 608//7=76
@@ -147,7 +147,7 @@ def prediction_transformation(prediction, input_dimension, anchor, num_class, CU
         grid_size = 52
 
     prediction = prediction.view(batch_size, bbox_attribute*3, grid_size*grid_size)
-    print('pred after view: {}'.format(prediction.size()))
+    # print('pred after view: {}'.format(prediction.size()))
     prediction = torch.transpose(prediction,dim0=1,dim1=2).contiguous()
     print('pred over: {}'.format(prediction.size()))
     prediction[:,:,0] = torch.sigmoid(prediction[:,:,0])
