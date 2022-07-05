@@ -104,7 +104,7 @@ def create_model(blocks):
             module.add_module('route_{}'.format(index),nn.Module())
 
         elif block['type'] == 'upsample':
-            upsample = nn.Upsample(scale_factor=block['stride'],mode='nearest')
+            upsample = nn.Upsample(scale_factor=block['stride'],mode='bilinear')
             module.add_module('upsample_{}'.format(index),upsample)
 
         else:

@@ -137,8 +137,8 @@ def detection_postprocessing(detection, input_dimension, anchor, num_class, CUDA
     detection = torch.transpose(detection,dim0=2,dim1=3)
     print(detection.size())
     batch_size = detection.size(dim=0)
-    grid_scale = detection.size(dim=2)
-    grid_size = input_dimension//stride
+    grid_scale = detection.size(dim=1)
+    grid_size = input_dimension//grid_scale
     bbox_attribute = 5+num_class
     anchor = [(a[0]/stride,a[1]/stride) for a in anchor]
 
