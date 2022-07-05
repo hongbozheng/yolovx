@@ -912,7 +912,7 @@ activation=leaky
 
 # 89
 [convolutional 61]
-# C x H x W = 256 x 26 x 26
+# C x H x W = 512 x 26 x 26
 batch_normalize=1
 size=3
 stride=1
