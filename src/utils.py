@@ -132,7 +132,7 @@ def parse_cfg(cfg):
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def detection_postprocessing(detection, batch, input_dimension, anchor, num_class, CUDA=True):
+def detection_postprocessing(detection, batch, input_dimension, anchors, num_class, CUDA=True):
     # print('Original detection: ',detection)
     # print(detection.size())
     # detection[:,:,:,:2] = torch.sigmoid(detection[:,:,:,:2])
@@ -144,11 +144,11 @@ def detection_postprocessing(detection, batch, input_dimension, anchor, num_clas
     grid_scale = detection.size(dim=1)
     grid_size = input_dimension//grid_scale
     bbox_attribute = 5+num_class
-    anchor = [(a[0]/grid_size,a[1]/grid_size) for a in anchor]
+    anchors = [(anchor[0]/grid_size,anchor[1]/grid_size) for anchor in anchors]
     # print(detection)
     detection = detection.view(batch,grid_scale,grid_scale,-1,bbox_attribute)
     detection[:,:,:,:,:2] = torch.sigmoid(detection[:,:,:,:,:2])
-    detection[:,:,:,:,4] = torch.sigmoid(detection[:,:,:,:,4])
+    detection[:,:,:,:,4:] = torch.sigmoid(detection[:,:,:,:,4:])
     # print('After sigmoid: ',detection)
     # print(detection.size())
     
@@ -164,8 +164,8 @@ def detection_postprocessing(detection, batch, input_dimension, anchor, num_clas
     # xy_offset = torch.cat(tensors=(xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
     # xy_offset = torch.cat(tensors=(torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3)),dim=3)
 
-    print('base',xy_offset)
-    print('base size',xy_offset.size())
+    # print('base',xy_offset)
+    # print('base size',xy_offset.size())
 
     # xy_offset = xy_offset.repeat(1,1,1,3,1)
     # print('xy_offset',xy_offset)
@@ -174,6 +174,17 @@ def detection_postprocessing(detection, batch, input_dimension, anchor, num_clas
 
     detection[:,:,:,:,:2] += xy_offset
     # detection[:,:,:,:,:2] *= grid_size
+    # print(detection)
+    # print(detection.size())
+    
+    # print(anchors)
+    # print(len(anchors))
+   
+    anchors = torch.FloatTensor(anchors).unsqueeze(dim=0).unsqueeze(dim=0).unsqueeze(dim=0).repeat(1,grid_scale,grid_scale,1,1)
+    # print(anchors)
+    # print(anchors.size())
+    
+    detection[:,:,:,:,2:4] = torch.exp(detection[:,:,:,:,2:4])*anchors
     print(detection)
     print(detection.size())
 
