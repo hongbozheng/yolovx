@@ -120,7 +120,7 @@ class Darknet(nn.Module):
 
                     bn_weight = torch.from_numpy(weights[ptr:ptr+weight_num])\
                                      .view(bn.weight.data.size())
-                    bn.weight.data.copy_(bn.weight)
+                    bn.weight.data.copy_(bn_weight)
                     ptr += weight_num
 
                     bn_running_mean = torch.from_numpy(weights[ptr:ptr+weight_num])\

@@ -329,8 +329,9 @@ def get_evaluation_box(yolo_detection, obj_score_threshold, num_class, iou_thres
     for i in range(yolo_detection.size(dim=0)):
         image_prediction = yolo_detection[i]
         image_prediction = image_prediction[image_prediction[:,4]!=0]
-
+    print('hello')
     print('image_prediction',image_prediction)
+    print(image_prediction.size())
 
     '''
     write = False

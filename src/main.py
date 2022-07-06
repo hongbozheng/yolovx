@@ -25,9 +25,9 @@ def main():
     input_image = get_input_image('../dog-cycle-car.png',input_dimension)
     detections = YOLOv3.forward(input_image)
     
-    # print(detections[0][1])
-    # print(detections[1][1])
-    # print(detections[2][1])
+    print(detections[0][1])
+    print(detections[1][1])
+    print(detections[2][1])
     
     yolo_detection = torch.FloatTensor()
 
