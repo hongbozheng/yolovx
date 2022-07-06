@@ -19,6 +19,7 @@ def main():
     YOLOv3.load_weights('../weights/yolov3.weights')
     net = YOLOv3.get_net()
     blocks = YOLOv3.get_blocks()[1:]
+    batch = net['batch']
     input_dimension = net['height']
     input_image = get_input_image('../dog-cycle-car.png',input_dimension)
     detection = YOLOv3.forward(input_image)
@@ -28,9 +29,8 @@ def main():
     # print(detection[2][1].size())
     num_class = blocks[detection[0][0]]['classes']
     anchor = [x for index,x in enumerate(blocks[detection[0][0]]['anchors']) if index in blocks[detection[0][0]]['mask']]
-    
-    print(anchor)
-    detection = detection_postprocessing(detection=detection[0][1],input_dimension=input_dimension,anchor=anchor,num_class=num_class,CUDA=True)
+
+    detection = detection_postprocessing(detection=detection[0][1],batch=batch,input_dimension=input_dimension,anchor=anchor,num_class=num_class,CUDA=True)
 
 if __name__ == '__main__':
     main()
