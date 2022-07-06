@@ -130,9 +130,34 @@ def parse_cfg(cfg):
     return blocks
 
 '''
-$$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def detection_postprocessing(detection, batch, input_dimension, anchors, num_class, CUDA=True):
+    batch_size = detection.size(dim=0)
+    grid_scale = detection.size(dim=2)
+    grid_size = input_dimension//grid_scale
+    num_anchors = len(anchors)
+    bbox_attribute = 5+num_class
+   
+    # print(detection)
+    # print(detection.size())
+
+    detection = detection.view(batch_size,num_anchors*bbox_attribute,grid_scale*grid_scale).transpose(dim0=1,dim1=2).contiguous()
+    detection = detection.view(batch_size,grid_scale*grid_scale*num_anchors,bbox_attribute)
+   
+    y_offset,x_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
+    xy_offset = torch.cat(tensors=(x_offset.view(-1,1),y_offset.view(-1,1)),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
+    # print(xy_offset.size())
+    detection[:,:,:2] = (torch.sigmoid(detection[:,:,:2])+xy_offset)*grid_size
+    detection[:,:,4:] = torch.sigmoid(detection[:,:,4:])
+    anchors = torch.FloatTensor(anchors).repeat(grid_scale*grid_scale,1).unsqueeze(dim=0)
+    # print(anchors)
+    detection[:,:,2:4] = torch.exp(detection[:,:,2:4])*anchors
+    
+    # print(detection)
+    # print(detection.size())
+
+    '''
     # print('Original detection: ',detection)
     # print(detection.size())
     # detection[:,:,:,:2] = torch.sigmoid(detection[:,:,:,:2])
@@ -144,7 +169,7 @@ def detection_postprocessing(detection, batch, input_dimension, anchors, num_cla
     grid_scale = detection.size(dim=1)
     grid_size = input_dimension//grid_scale
     bbox_attribute = 5+num_class
-    anchors = [(anchor[0]/grid_size,anchor[1]/grid_size) for anchor in anchors]
+    # anchors = [(anchor[0]/grid_size,anchor[1]/grid_size) for anchor in anchors]
     # print(detection)
     detection = detection.view(batch,grid_scale,grid_scale,-1,bbox_attribute)
     detection[:,:,:,:,:2] = torch.sigmoid(detection[:,:,:,:,:2])
@@ -172,7 +197,8 @@ def detection_postprocessing(detection, batch, input_dimension, anchors, num_cla
     # print('size xy',xy_offset.size())
 
 
-    detection[:,:,:,:,:2] += xy_offset
+    detection[:,:,:,:,:2] = (detection[:,:,:,:,:2]+xy_offset)*grid_size
+    # detection[:,:,:,:,:2] *= grid_size
     # detection[:,:,:,:,:2] *= grid_size
     # print(detection)
     # print(detection.size())
@@ -187,6 +213,7 @@ def detection_postprocessing(detection, batch, input_dimension, anchors, num_cla
     detection[:,:,:,:,2:4] = torch.exp(detection[:,:,:,:,2:4])*anchors
     print(detection)
     print(detection.size())
+    '''
 
     '''
     print(detection)
@@ -268,28 +295,37 @@ def intersection_over_union(box_1, box_2, box_format='midpoint'):
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ non max suppression $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def non_max_suppression(class_prediction, iou_threshold, box_format='midpoint'):
+def non_max_suppression(final_detection, iou_threshold, box_format='midpoint'):
     # bbox [[X,Y,W,H,OS(Highest),CI,CS],
     #                  ...             ,
     #       [X,Y,W,H,OS(Lowest) ,CI,CS]]
     # probably make class_prediction a list of tensor is easier ????? idk
-    class_prediction = class_prediction[torch.sort(input=class_prediction[:,4],descending=True)[1]]
-    
-    for i in range(class_prediction.size(dim=0)):
-        for k in range(class_prediction[i+1:].size(dim=0)):
-            if intersection_over_union(class_prediction[i],class_prediction[k]) > iou_threshold:
-                class_prediction[k]*=0
-    
-    class_prediction[class_prediction[:,0] != 0]
+    final_detection = final_detection[torch.sort(input=final_detection[:,:,4],descending=True)[1]]
+    print(final_detection.size())
 
-    return class_prediction 
+    for i in range(final_detection.size(dim=0)):
+        for k in range(final_detection[i+1:].size(dim=0)):
+            if intersection_over_union(final_detection[i],final_detection[k]) > iou_threshold:
+                final_detection[k]*=0
+    
+    final_detection[final_detection[:,0] != 0]
+
+    return final_detection 
     # need this function ?????
     # yes indeed
 
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ get evaluation box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def get_evaluation_box(prediction, obj_score_threshold, num_class, NMS=True, iou_threshold=0.5, box_format='midpoint'):
+def get_evaluation_box(final_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint'):
+    final_detection = [final_detection[:,:,4] >= obj_score_threshold]
+    
+    # final_detection *= (final_detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
+
+    print(final_detection)
+    print(final_detection.size())
+    
+    '''
     write = False
     prediction *= (prediction[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
     
@@ -324,7 +360,7 @@ def get_evaluation_box(prediction, obj_score_threshold, num_class, NMS=True, iou
             # obj_score_sort_index = torch.sort(input=class_prediction[:,4],descending=True)[1]
             # class_prediction = class_prediction[torch.sort(input=class_prediction[:,4],descending=True)[1]]
 
-            if class_prediction.size(dim=0) > 1 and NMS:
+            if class_prediction.size(dim=0) > 1:
                 non_max_suppression(class_prediction=class_prediction,iou_threshold=iou_threshold,box_format=box_format)
             
             batch_index = class_prediction.new(class_prediction.size(dim=0),1).fill_(i)
@@ -335,8 +371,8 @@ def get_evaluation_box(prediction, obj_score_threshold, num_class, NMS=True, iou
             else:
                 class_prediction = torch.cat(tensors=(batch_index,class_prediction),dim=1)
                 final_prediction = torch.cat(tensors=(final_prediction,class_prediction),dim=0)
-
-    return final_prediction
+    '''
+    return final_detection
 
 '''
 a = torch.tensor([[[[0,0],

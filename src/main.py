@@ -1,5 +1,6 @@
 import darknet
 from utils import detection_postprocessing
+from utils import get_evaluation_box
 import cv2
 import numpy as np
 from torch.autograd import Variable
@@ -22,15 +23,24 @@ def main():
     batch = net['batch']
     input_dimension = net['height']
     input_image = get_input_image('../dog-cycle-car.png',input_dimension)
-    detection = YOLOv3.forward(input_image)
+    detections = YOLOv3.forward(input_image)
     
     # print(detection[0][1].size())
     # print(detection[1][1].size())
     # print(detection[2][1].size())
+    
+    final_detection = torch.FloatTensor()
 
-    anchors = [anchor for index,anchor in enumerate(blocks[detection[0][0]]['anchors']) if index in blocks[detection[0][0]]['mask']]
-    num_class = blocks[detection[0][0]]['classes']
-    detection = detection_postprocessing(detection=detection[0][1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
+    for detection in detections:
+        anchors = [anchor for index,anchor in enumerate(blocks[detection[0]]['anchors']) if index in blocks[detection[0]]['mask']]
+        num_class = blocks[detection[0]]['classes']
+        detection = detection_postprocessing(detection=detection[1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
+        final_detection = torch.cat(tensors=(final_detection,detection),dim=1)
+        # print('-----')
+    print(final_detection)
+    print(final_detection.size())
+
+    get_evaluation_box(final_detection=final_detection,obj_score_threshold=0.7,num_class=num_class,iou_threshold=0.5, box_format='midpoint')
 
 if __name__ == '__main__':
     main()
