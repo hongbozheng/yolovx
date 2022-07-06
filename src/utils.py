@@ -317,14 +317,21 @@ def non_max_suppression(final_detection, iou_threshold, box_format='midpoint'):
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ get evaluation box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def get_evaluation_box(final_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint'):
-    final_detection = [final_detection[:,:,4] >= obj_score_threshold]
-    
-    # final_detection *= (final_detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
+def get_evaluation_box(yolo_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint'):
+    yolo_detection *= (yolo_detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
 
-    print(final_detection)
-    print(final_detection.size())
+    print(yolo_detection)
+    print(yolo_detection.size())
     
+    if torch.nonzero(yolo_detection).numel() == 0:
+        return 0
+    
+    for i in range(yolo_detection.size(dim=0)):
+        image_prediction = yolo_detection[i]
+        image_prediction = image_prediction[image_prediction[:,4]!=0]
+
+    print('image_prediction',image_prediction)
+
     '''
     write = False
     prediction *= (prediction[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)

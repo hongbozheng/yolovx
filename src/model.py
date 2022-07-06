@@ -44,16 +44,16 @@ def create_model(blocks):
                                             stride=block['stride'],
                                             padding=padding,
                                             bias=bias)
-            module.add_module('Conv2d_{}'.format(index),convolutional_layer)
+            module.add_module('conv2d_{}'.format(index),convolutional_layer)
 
             if batch_normalize:
                 batch_norm = nn.BatchNorm2d(num_features=filters)
-                module.add_module('BatchNorm2d_{}'.format(index),batch_norm)
+                module.add_module('batchnorm2d_{}'.format(index),batch_norm)
 
             # may need to add more cases for other activation functions in the future
             if block['activation'] == 'leaky':
                 activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
-                module.add_module('LeakyReLU_{}'.format(index),activation_function)
+                module.add_module('leakyrelu_{}'.format(index),activation_function)
 
             # convolutional layer before yolo layer, activation function = linear
             # if we have linear layer, conv2d bias=T/F, linear bias=T/F
@@ -74,7 +74,7 @@ def create_model(blocks):
             except:
                 block['from'] += index
                 cache_module_index.append(block['from'])
-            module.add_module('short_cut_{}'.format(index),nn.Module())
+            module.add_module('shortcut_{}'.format(index),nn.Module())
         
         elif block['type'] == 'yolo':
             # cache_module_index.append(layer_index)
