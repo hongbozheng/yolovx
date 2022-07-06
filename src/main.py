@@ -27,9 +27,9 @@ def main():
     # print(detection[0][1].size())
     # print(detection[1][1].size())
     # print(detection[2][1].size())
-    num_class = blocks[detection[0][0]]['classes']
-    anchor = [x for index,x in enumerate(blocks[detection[0][0]]['anchors']) if index in blocks[detection[0][0]]['mask']]
 
+    anchor = [x for index,x in enumerate(blocks[detection[0][0]]['anchors']) if index in blocks[detection[0][0]]['mask']]
+    num_class = blocks[detection[0][0]]['classes']
     detection = detection_postprocessing(detection=detection[0][1],batch=batch,input_dimension=input_dimension,anchor=anchor,num_class=num_class,CUDA=True)
 
 if __name__ == '__main__':

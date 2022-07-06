@@ -149,20 +149,23 @@ def detection_postprocessing(detection, batch, input_dimension, anchor, num_clas
     detection = detection.view(batch,grid_scale,grid_scale,-1,bbox_attribute)
     detection[:,:,:,:,:2] = torch.sigmoid(detection[:,:,:,:,:2])
     detection[:,:,:,:,4] = torch.sigmoid(detection[:,:,:,:,4])
-    print('After sigmoid: ',detection)
-    print(detection.size())
+    # print('After sigmoid: ',detection)
+    # print(detection.size())
     
     x_offset, y_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
-    x_offset = x_offset.view(grid_scale*grid_scale,-1)
-    y_offset = y_offset.view(grid_scale*grid_scale,-1)
+    # x_offset = x_offset.view(grid_scale*grid_scale,-1)
+    # y_offset = y_offset.view(grid_scale*grid_scale,-1)
 
-    xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3).repeat(1,1,1,3,1)
+    # print(x_offset)
+    # print(y_offset)
+
+    xy_offset = torch.cat(tensors=(y_offset.view(grid_scale*grid_scale,-1),x_offset.view(grid_scale*grid_scale,-1)),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3).repeat(1,1,1,3,1)
     # xy_offset = torch.cat(tensors=(xy_offset,xy_offset,xy_offset),dim=3)
     # xy_offset = torch.cat(tensors=(xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
     # xy_offset = torch.cat(tensors=(torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3)),dim=3)
 
-    # print('base',xy_offset)
-    # print('base size',xy_offset.size())
+    print('base',xy_offset)
+    print('base size',xy_offset.size())
 
     # xy_offset = xy_offset.repeat(1,1,1,3,1)
     # print('xy_offset',xy_offset)
@@ -170,7 +173,7 @@ def detection_postprocessing(detection, batch, input_dimension, anchor, num_clas
 
 
     detection[:,:,:,:,:2] += xy_offset
-    detection[:,:,:,:,:2] *= grid_size
+    # detection[:,:,:,:,:2] *= grid_size
     print(detection)
     print(detection.size())
 
