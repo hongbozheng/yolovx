@@ -133,42 +133,38 @@ def parse_cfg(cfg):
 $$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def detection_postprocessing(detection, batch, input_dimension, anchor, num_class, CUDA=True):
-    detection = torch.transpose(detection,dim0=1,dim1=2).contiguous()
-    detection = torch.transpose(detection,dim0=2,dim1=3).contiguous()
-    print(detection.size())
+    detection = torch.transpose(detection,dim0=1,dim1=2)
+    detection = torch.transpose(detection,dim0=2,dim1=3)
+    # print(detection.size())
     batch_size = detection.size(dim=0)
     grid_scale = detection.size(dim=1)
     grid_size = input_dimension//grid_scale
     bbox_attribute = 5+num_class
     anchor = [(a[0]/grid_size,a[1]/grid_size) for a in anchor]
-    print(detection)
-    
+    # print(detection)
     detection = detection.view(batch,grid_scale,grid_scale,-1,bbox_attribute)
-    
+    detection[:,:,:,:,:2] = torch.sigmoid(detection[:,:,:,:,:2])
+    detection[:,:,:,:,4] = torch.sigmoid(detection[:,:,:,:,4])
     print(detection)
     print(detection.size())
-
-    detection[:,:,0] = torch.sigmoid(detection[:,:,0])
-    detection[:,:,1] = torch.sigmoid(detection[:,:,1])
-    detection[:,:,4] = torch.sigmoid(detection[:,:,4])
-    '''
+    
     x_offset, y_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
     x_offset = x_offset.view(grid_scale*grid_scale,-1)
     y_offset = y_offset.view(grid_scale*grid_scale,-1)
-    # print(x_offset)
-    # print(y_offset)
 
-    xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1)
-    # print(xy_offset)
-    # print(xy_offset.size())
-    xy_offset = xy_offset.view(grid_scale,grid_scale,-1)
-    print('base',xy_offset)
-    print('base size',xy_offset.size())
-    
-    detection[:,:,2] += xy_offset
+    # xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3)
+    # xy_offset = torch.cat(tensors=(xy_offset,xy_offset,xy_offset),dim=3)
+    # xy_offset = torch.cat(tensors=(xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
+    xy_offset = torch.cat(tensors=(torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
+        torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
+        torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3)),dim=3)
+    # print('base',xy_offset)
+    # print('base size',xy_offset.size())
+     
+    detection[:,:,:,:,:2] += xy_offset
 
     print(detection)
-    '''
+    
     '''
     prediction = prediction.view(batch_size, grid_size*grid_size*3, bbox_attribute)
     print('pred over: {}'.format(prediction.size()))
