@@ -133,6 +133,10 @@ def parse_cfg(cfg):
 $$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing for YOLO layer $$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def detection_postprocessing(detection, batch, input_dimension, anchor, num_class, CUDA=True):
+    # print('Original detection: ',detection)
+    # print(detection.size())
+    # detection[:,:,:,:2] = torch.sigmoid(detection[:,:,:,:2])
+    # print(detection)
     detection = torch.transpose(detection,dim0=1,dim1=2)
     detection = torch.transpose(detection,dim0=2,dim1=3)
     # print(detection.size())
@@ -145,26 +149,40 @@ def detection_postprocessing(detection, batch, input_dimension, anchor, num_clas
     detection = detection.view(batch,grid_scale,grid_scale,-1,bbox_attribute)
     detection[:,:,:,:,:2] = torch.sigmoid(detection[:,:,:,:,:2])
     detection[:,:,:,:,4] = torch.sigmoid(detection[:,:,:,:,4])
-    print(detection)
+    print('After sigmoid: ',detection)
     print(detection.size())
     
     x_offset, y_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
     x_offset = x_offset.view(grid_scale*grid_scale,-1)
     y_offset = y_offset.view(grid_scale*grid_scale,-1)
 
-    # xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3)
+    xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3).repeat(1,1,1,3,1)
     # xy_offset = torch.cat(tensors=(xy_offset,xy_offset,xy_offset),dim=3)
     # xy_offset = torch.cat(tensors=(xy_offset = torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
-    xy_offset = torch.cat(tensors=(torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
-        torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),
-        torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3)),dim=3)
+    # xy_offset = torch.cat(tensors=(torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3),torch.cat(tensors=(y_offset,x_offset),dim=1).view(grid_scale,grid_scale,-1).unsqueeze(dim=0).unsqueeze(dim=3)),dim=3)
+
     # print('base',xy_offset)
     # print('base size',xy_offset.size())
-     
-    detection[:,:,:,:,:2] += xy_offset
 
+    # xy_offset = xy_offset.repeat(1,1,1,3,1)
+    # print('xy_offset',xy_offset)
+    # print('size xy',xy_offset.size())
+
+
+    detection[:,:,:,:,:2] += xy_offset
+    detection[:,:,:,:,:2] *= grid_size
     print(detection)
-    
+    print(detection.size())
+
+    '''
+    print(detection)
+    print(detection.size())
+    print(detection[0,0,0,0,4])
+    print(detection[...,4:5])
+    print(detection[...,4:5].size())
+    print('-----',detection[detection[...,4]>=0.5])
+    '''
+
     '''
     prediction = prediction.view(batch_size, grid_size*grid_size*3, bbox_attribute)
     print('pred over: {}'.format(prediction.size()))
@@ -306,6 +324,47 @@ def get_evaluation_box(prediction, obj_score_threshold, num_class, NMS=True, iou
 
     return final_prediction
 
+'''
+a = torch.tensor([[[[0,0],
+                    [1,1]],
+                   [[2,2],
+                    [3,3]],
+                   [[4,4],
+                    [5,5]],
+                   [[6,6],
+                    [7,7]],
+                   [[8,8],
+                    [9,9]],
+                   [[1,1],
+                    [0,0]]]])
+print('a',a)
+print('size a',a.size())
+
+a = torch.transpose(a,1,2)
+a = torch.transpose(a,2,3)
+print(a)
+print(a.size())
+a = a.view(1,2,2,-1,3)
+print(a)
+print(a.size())
+'''
+
+'''
+a = torch.tensor([[[1,2,3,4,5,6],
+                   [1,2,3,4,5,6],
+                   [1,2,3,4,5,6]],
+                  [[6,7,8,9,0,1],
+                   [6,7,8,9,0,1],
+                   [6,7,8,9,0,1]],
+                  [[1,3,5,7,9,0],
+                   [1,3,5,7,9,0],
+                   [1,3,5,7,9,0]]])
+print('a',a)
+print('a size',a.size())
+a = a.view(3,3,-1,3)
+print(a)
+print(a.size())
+'''
 '''
 a = torch.tensor([[[1,1,1,5,1],
                    [1,1,1,1,2],
