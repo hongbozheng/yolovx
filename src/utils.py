@@ -84,7 +84,7 @@ def detection_postprocessing(detection, batch, input_dimension, anchors, num_cla
     detection = detection.view(batch_size,num_anchors*bbox_attribute,grid_scale*grid_scale).transpose(dim0=1,dim1=2).contiguous()
     detection = detection.view(batch_size,grid_scale*grid_scale*num_anchors,bbox_attribute)
    
-    y_offset,x_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
+    x_offset,y_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
     xy_offset = torch.cat(tensors=(x_offset.view(-1,1),y_offset.view(-1,1)),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
     # print(xy_offset.size())
     detection[:,:,:2] = (torch.sigmoid(detection[:,:,:2])+xy_offset)*grid_size
