@@ -1,6 +1,8 @@
+import config
 import logging
 import torch
 import numpy as np
+import cv2
 
 epsilon = 1e-6
 
@@ -267,7 +269,7 @@ def non_max_suppression(class_detection, iou_threshold, box_format='midpoint'):
     # yes indeed
 
 '''
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ get evaluation box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ get final detection $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint'):
     yolo_detection *= (yolo_detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
@@ -360,6 +362,23 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
                 final_prediction = torch.cat(tensors=(final_prediction,class_prediction),dim=0)
     '''
     return final_detection
+
+'''
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+'''
+# def coordinate_conversion(final_detection):
+
+'''
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+'''
+def draw_bounding_box(final_detection,images):
+    final_image_detection = torch.FloatTensor()
+    for (detection,image) in zip(final_detection,images):
+        cv2.rectangle(image,(detection[0]-detection[2]/2,detection[1]-detection[3]/2),(detection[0]+detection[2]/2,detection[1]+detection[3]/2),config.NEON_PINK,config.BOUNDING_BOX_THICKNESS)
+        final_image_detection = torch.cat(tensors=(final_image_detection,image.unsqueeze(dim=0)),dim=0)
+    return final_image_detection
+
+
 
 '''
 a = torch.tensor([[[[0,0],
