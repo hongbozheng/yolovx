@@ -25,9 +25,9 @@ def main():
     input_image = get_input_image('../dog-cycle-car.png',input_dimension)
     detections = YOLOv3.forward(input_image)
     
-    print(detections[0][1])
-    print(detections[1][1])
-    print(detections[2][1])
+    # print(detections[0][1])
+    # print(detections[1][1])
+    # print(detections[2][1])
     
     yolo_detection = torch.FloatTensor()
 
@@ -37,10 +37,10 @@ def main():
         detection = detection_postprocessing(detection=detection[1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
         yolo_detection = torch.cat(tensors=(yolo_detection,detection),dim=1)
         # print('-----')
-    print(yolo_detection)
-    print(yolo_detection.size())
+    # print(yolo_detection)
+    # print(yolo_detection.size())
 
-    get_evaluation_box(yolo_detection=yolo_detection,obj_score_threshold=0.7,num_class=num_class,iou_threshold=0.5, box_format='midpoint')
+    get_evaluation_box(yolo_detection=yolo_detection,obj_score_threshold=0.7,num_class=num_class,iou_threshold=0.5,box_format='midpoint')
 
 if __name__ == '__main__':
     main()
