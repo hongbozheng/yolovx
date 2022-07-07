@@ -6,9 +6,9 @@ import torch.nn as nn
 # Test
 # from parse import parse_cfg
 
-def create_model(blocks):
+def create_model(configuration):
     
-    net = blocks[0]
+    net = configuration[0]
     model = nn.ModuleList()
     cache_module_index = []
 
@@ -17,20 +17,20 @@ def create_model(blocks):
     filters_list = []
     index = 0
 
-    for layer_index,block in enumerate(blocks[1:]):
+    for layer_index,layer_config in enumerate(configuration[1:]):
         module = nn.Sequential()
         
-        if block['type'] == 'convolutional':
+        if layer_config['type'] == 'convolutional':
             try:
-                batch_normalize = block['batch_normalize']
+                batch_normalize = layer_config['batch_normalize']
                 bias = False
             except:
                 batch_normalize = 0
                 bias = True
 
-            filters     = block['filters']
-            kernel_size = block['size']
-            padding     = block['pad']
+            filters     = layer_config['filters']
+            kernel_size = layer_config['size']
+            padding     = layer_config['pad']
             
             # information on darknet wiki
             if padding:
@@ -41,7 +41,7 @@ def create_model(blocks):
             convolutional_layer = nn.Conv2d(in_channels=prev_filters,
                                             out_channels=filters,
                                             kernel_size=kernel_size,
-                                            stride=block['stride'],
+                                            stride=layer_config['stride'],
                                             padding=padding,
                                             bias=bias)
             module.add_module('conv2d_{}'.format(index),convolutional_layer)
@@ -51,7 +51,7 @@ def create_model(blocks):
                 module.add_module('batchnorm2d_{}'.format(index),batch_norm)
 
             # may need to add more cases for other activation functions in the future
-            if block['activation'] == 'leaky':
+            if layer_config['activation'] == 'leaky':
                 activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
                 module.add_module('leakyrelu_{}'.format(index),activation_function)
 
@@ -63,48 +63,48 @@ def create_model(blocks):
             #                                     bias=bias)
             #     module.add_module('Linear_{}'.format(index),activation_function)
 
-        elif block['type'] == 'shortcut':
+        elif layer_config['type'] == 'shortcut':
             # what is he doing with from_ in Github ???
             # EmptyLayer() class inherit from nn.Module, necessary?
             # cache_module_index.append(index-1)
             try:
-                for i in range(len(block['from'])):
-                    block['from'][i] += index
-                    cache_module_index.append(block['from'][i])
+                for i in range(len(layer_config['from'])):
+                    layer_config['from'][i] += index
+                    cache_module_index.append(layer_config['from'][i])
             except:
-                block['from'] += index
-                cache_module_index.append(block['from'])
+                layer_config['from'] += index
+                cache_module_index.append(layer_config['from'])
             module.add_module('shortcut_{}'.format(index),nn.Module())
         
-        elif block['type'] == 'yolo':
+        elif layer_config['type'] == 'yolo':
             # cache_module_index.append(layer_index)
             module.add_module('yolo_{}'.format(index),nn.Module())
 
-        elif block['type'] == 'route':
+        elif layer_config['type'] == 'route':
             # EmptyLayer() class inherit from nn.Module, necessary?
             filters = 0
             try:
-                for i in range(len(block['layers'])):
-                    if block['layers'][i] < 0:
-                        block['layers'][i] += index
-                        filters += filters_list[block['layers'][i]]
-                        cache_module_index.append(block['layers'][i])
+                for i in range(len(layer_config['layers'])):
+                    if layer_config['layers'][i] < 0:
+                        layer_config['layers'][i] += index
+                        filters += filters_list[layer_config['layers'][i]]
+                        cache_module_index.append(layer_config['layers'][i])
                     else:
-                        filters += filters_list[block['layers'][i]]
-                        cache_module_index.append(block['layers'][i])
+                        filters += filters_list[layer_config['layers'][i]]
+                        cache_module_index.append(layer_config['layers'][i])
             except:
-                if block['layers'] < 0:
-                    block['layers'] += index
-                    filters = filters_list[block['layers']]
-                    cache_module_index.append(block['layers'])
+                if layer_config['layers'] < 0:
+                    layer_config['layers'] += index
+                    filters = filters_list[layer_config['layers']]
+                    cache_module_index.append(layer_config['layers'])
                 else:
-                    cache_module_index.append(block['layers'])
-                    filters = filters_list(block['layers'])
+                    cache_module_index.append(layer_config['layers'])
+                    filters = filters_list(layer_config['layers'])
 
             module.add_module('route_{}'.format(index),nn.Module())
 
-        elif block['type'] == 'upsample':
-            upsample = nn.Upsample(scale_factor=block['stride'],mode='bilinear')
+        elif layer_config['type'] == 'upsample':
+            upsample = nn.Upsample(scale_factor=layer_config['stride'],mode='bilinear')
             module.add_module('upsample_{}'.format(index),upsample)
 
         else:

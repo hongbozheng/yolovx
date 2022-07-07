@@ -13,11 +13,11 @@ import numpy as np
 class Darknet(nn.Module):
     def __init__(self,cfg):
         super(Darknet,self).__init__()
-        self.blocks = parse_cfg(cfg)
-        self.net,self.model,self.cache_module_index = create_model(blocks=self.blocks)
+        self.configuration = parse_cfg(cfg)
+        self.net,self.model,self.cache_module_index = create_model(configuration=self.configuration)
 
-    def get_blocks(self):
-        return self.blocks
+    def get_configuration(self):
+        return self.configuration
 
     def get_net(self):
         return self.net
@@ -35,7 +35,7 @@ class Darknet(nn.Module):
 
         for i in range(len(self.model)):
             
-            module_type = self.blocks[i+1]['type']
+            module_type = self.configuration[i+1]['type']
 
             if module_type == 'convolutional' or module_type == 'upsample':
                 x = self.model[i](x)
@@ -43,19 +43,19 @@ class Darknet(nn.Module):
             elif module_type == 'shortcut':
                 # x = module_cache[i-1]
                 try:
-                    for layer in self.blocks[i+1]['from']:
+                    for layer in self.configuration[i+1]['from']:
                         x += module_cache[layer]
                 except:
-                    x += module_cache[self.blocks[i+1]['from']]
+                    x += module_cache[self.configuration[i+1]['from']]
             
             elif module_type == 'route':
                 try:
-                    x = module_cache[self.blocks[i+1]['layers'][0]]
+                    x = module_cache[self.configuration[i+1]['layers'][0]]
                 except:
-                    x = module_cache[self.blocks[i+1]['layers']]
+                    x = module_cache[self.configuration[i+1]['layers']]
                 try:
-                    for k in range(len(self.blocks[i+1]['layers'][1:])):
-                        x = torch.cat(tensors=(x,module_cache[self.blocks[i+1]['layers'][k+1]]),dim=1)
+                    for k in range(len(self.configuration[i+1]['layers'][1:])):
+                        x = torch.cat(tensors=(x,module_cache[self.configuration[i+1]['layers'][k+1]]),dim=1)
                 except:
                     pass
 
@@ -97,9 +97,9 @@ class Darknet(nn.Module):
         weight_num = 0
 
         for i in range(0,len(self.model)):
-            if self.blocks[i+1]['type'] == 'convolutional':
+            if self.configuration[i+1]['type'] == 'convolutional':
                 try:
-                    batch_normalize = self.blocks[i+1]['batch_normalize']
+                    batch_normalize = self.configuration[i+1]['batch_normalize']
                 except:
                     batch_normalize = 0
                 conv = self.model[i][0]

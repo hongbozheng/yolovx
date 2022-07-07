@@ -20,7 +20,7 @@ def main():
     YOLOv3 = darknet.Darknet(YOLOv3_CFG)
     YOLOv3.load_weights(YOLOv3_WEIGHTS)
     net = YOLOv3.get_net()
-    blocks = YOLOv3.get_blocks()[1:]
+    configuration = YOLOv3.get_configuration()[1:]
     batch = net['batch']
     input_dimension = net['height']
     input_image = get_input_image('../dog-cycle-car.png',input_dimension)
@@ -33,8 +33,8 @@ def main():
     yolo_detection = torch.FloatTensor()
 
     for detection in detections:
-        anchors = [anchor for index,anchor in enumerate(blocks[detection[0]]['anchors']) if index in blocks[detection[0]]['mask']]
-        num_class = blocks[detection[0]]['classes']
+        anchors = [anchor for index,anchor in enumerate(configuration[detection[0]]['anchors']) if index in configuration[detection[0]]['mask']]
+        num_class = configuration[detection[0]]['classes']
         detection = detection_postprocessing(detection=detection[1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
         yolo_detection = torch.cat(tensors=(yolo_detection,detection),dim=1)
         # print('-----')
