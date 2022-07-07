@@ -3,10 +3,10 @@ Create model of YOLOv3 architecture
 '''
 
 import torch.nn as nn
-# Test
-# from parse import parse_cfg
+import numpy as np
+import torch
 
-def create_model(configuration):
+def create_model(configuration, yolo_weights):
     
     net = configuration[0]
     model = nn.ModuleList()
@@ -15,7 +15,16 @@ def create_model(configuration):
     prev_filters = 3
     filters = 0
     filters_list = []
-    index = 0
+    
+    file = open(yolo_weights,'rb')
+    weights_info = np.fromfile(file=file,dtype=np.int32,count=5)
+    weights = np.fromfile(file=file,dtype=np.float32)
+    print('[YOLOv3 Weights INFO]: {}'.format(weights_info))
+    print('[YOLOv3 Weights]:      {}'.format(weights))
+    print('[YOLOv3 Weights LEN]:  {}'.format(len(weights)))
+
+    ptr = 0
+    weight_num = 0
 
     for layer_index,layer_config in enumerate(configuration[1:]):
         module = nn.Sequential()
@@ -27,7 +36,7 @@ def create_model(configuration):
             except:
                 batch_normalize = 0
                 bias = True
-
+            
             filters     = layer_config['filters']
             kernel_size = layer_config['size']
             padding     = layer_config['pad']
@@ -44,16 +53,53 @@ def create_model(configuration):
                                             stride=layer_config['stride'],
                                             padding=padding,
                                             bias=bias)
-            module.add_module('conv2d_{}'.format(index),convolutional_layer)
 
             if batch_normalize:
                 batch_norm = nn.BatchNorm2d(num_features=filters)
-                module.add_module('batchnorm2d_{}'.format(index),batch_norm)
 
+                weight_num = batch_norm.bias.numel()
+                # print('weight_num: {}'.format(weight_num))
+
+                # print('weights: {}'.format(weights[ptr:ptr+weight_num]))
+                # or .view_as(bn.bias.data)
+                batch_norm_bias = torch.from_numpy(weights[ptr:ptr+weight_num]).view(batch_norm.bias.data.size())
+                # print('bn_bias: {}'.format(bn_bias))
+                batch_norm.bias.data.copy_(batch_norm_bias)
+                ptr += weight_num
+                # print('bn.bias: {}'.format(bn.bias))
+
+                batch_norm_weight = torch.from_numpy(weights[ptr:ptr+weight_num]).view(batch_norm.weight.data.size())
+                batch_norm.weight.data.copy_(batch_norm_weight)
+                ptr += weight_num
+
+                batch_norm_running_mean = torch.from_numpy(weights[ptr:ptr+weight_num]).view(batch_norm.running_mean.data.size())
+                batch_norm.running_mean.data.copy_(batch_norm_running_mean)
+                ptr += weight_num
+
+                batch_norm_running_var = torch.from_numpy(weights[ptr:ptr+weight_num]).view(batch_norm.running_var.data.size())
+                batch_norm.running_var.data.copy_(batch_norm_running_var)
+                ptr += weight_num
+            
+            else:
+                weight_num = convolutional_layer.bias.numel()
+                convolutional_layer_bias = torch.from_numpy(weights[ptr:ptr+weight_num]).view(convolutional_layer.bias.data.size())
+                convolutional_layer.bias.data.copy_(convolutional_layer_bias)
+                ptr += weight_num
+
+            weight_num = convolutional_layer.weight.numel()
+            convolutional_layer_weight = torch.from_numpy(weights[ptr:ptr+weight_num]).view(convolutional_layer.weight.data.size())
+            convolutional_layer.weight.data.copy_(convolutional_layer_weight)
+            ptr += weight_num
+
+            module.add_module('conv2d_{}'.format(layer_index),convolutional_layer)
+            
+            if batch_normalize:
+                module.add_module('batchnorm2d_{}'.format(layer_index),batch_norm)
+            
             # may need to add more cases for other activation functions in the future
             if layer_config['activation'] == 'leaky':
                 activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
-                module.add_module('leakyrelu_{}'.format(index),activation_function)
+                module.add_module('leakyrelu_{}'.format(layer_index),activation_function)
 
             # convolutional layer before yolo layer, activation function = linear
             # if we have linear layer, conv2d bias=T/F, linear bias=T/F
@@ -69,16 +115,16 @@ def create_model(configuration):
             # cache_module_index.append(index-1)
             try:
                 for i in range(len(layer_config['from'])):
-                    layer_config['from'][i] += index
+                    layer_config['from'][i] += layer_index
                     cache_module_index.append(layer_config['from'][i])
             except:
-                layer_config['from'] += index
+                layer_config['from'] += layer_index
                 cache_module_index.append(layer_config['from'])
-            module.add_module('shortcut_{}'.format(index),nn.Module())
+            module.add_module('shortcut_{}'.format(layer_index),nn.Module())
         
         elif layer_config['type'] == 'yolo':
             # cache_module_index.append(layer_index)
-            module.add_module('yolo_{}'.format(index),nn.Module())
+            module.add_module('yolo_{}'.format(layer_index),nn.Module())
 
         elif layer_config['type'] == 'route':
             # EmptyLayer() class inherit from nn.Module, necessary?
@@ -86,7 +132,7 @@ def create_model(configuration):
             try:
                 for i in range(len(layer_config['layers'])):
                     if layer_config['layers'][i] < 0:
-                        layer_config['layers'][i] += index
+                        layer_config['layers'][i] += layer_index
                         filters += filters_list[layer_config['layers'][i]]
                         cache_module_index.append(layer_config['layers'][i])
                     else:
@@ -94,18 +140,18 @@ def create_model(configuration):
                         cache_module_index.append(layer_config['layers'][i])
             except:
                 if layer_config['layers'] < 0:
-                    layer_config['layers'] += index
+                    layer_config['layers'] += layer_index
                     filters = filters_list[layer_config['layers']]
                     cache_module_index.append(layer_config['layers'])
                 else:
                     cache_module_index.append(layer_config['layers'])
                     filters = filters_list(layer_config['layers'])
 
-            module.add_module('route_{}'.format(index),nn.Module())
+            module.add_module('route_{}'.format(layer_index),nn.Module())
 
         elif layer_config['type'] == 'upsample':
             upsample = nn.Upsample(scale_factor=layer_config['stride'],mode='bilinear')
-            module.add_module('upsample_{}'.format(index),upsample)
+            module.add_module('upsample_{}'.format(layer_index),upsample)
 
         else:
             print('[ERROR]: Module type NOT FOUND; Check cfg file')
@@ -114,8 +160,8 @@ def create_model(configuration):
         model.append(module)
         prev_filters = filters
         filters_list.append(filters)
-        index+=1
-    
+  
+    print(ptr)
     cache_module_index.sort(reverse=False)
     print('[INFO]: Finish creating model')
     print('[Net]:  {}'.format(net))

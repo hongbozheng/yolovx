@@ -11,10 +11,10 @@ import numpy as np
 # logging.basicConfig(level=logging.DEBUG)
 
 class Darknet(nn.Module):
-    def __init__(self,cfg):
+    def __init__(self,cfg,yolo_weights):
         super(Darknet,self).__init__()
         self.configuration = parse_cfg(cfg)
-        self.net,self.model,self.cache_module_index = create_model(configuration=self.configuration)
+        self.net,self.model,self.cache_module_index = create_model(configuration=self.configuration,yolo_weights=yolo_weights)
 
     def get_configuration(self):
         return self.configuration

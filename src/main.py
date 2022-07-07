@@ -17,8 +17,8 @@ def get_input_image(image_path,input_dimension):
     return image
 
 def main():
-    YOLOv3 = darknet.Darknet(YOLOv3_CFG)
-    YOLOv3.load_weights(YOLOv3_WEIGHTS)
+    YOLOv3 = darknet.Darknet(YOLOv3_CFG,YOLOv3_WEIGHTS)
+    # YOLOv3.load_weights(YOLOv3_WEIGHTS)
     net = YOLOv3.get_net()
     configuration = YOLOv3.get_configuration()[1:]
     batch = net['batch']
