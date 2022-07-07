@@ -372,10 +372,13 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def draw_bounding_box(final_detection,images):
-    final_image_detection = torch.FloatTensor()
-    for (detection,image) in zip(final_detection,images):
-        cv2.rectangle(image,(detection[0]-detection[2]/2,detection[1]-detection[3]/2),(detection[0]+detection[2]/2,detection[1]+detection[3]/2),config.NEON_PINK,config.BOUNDING_BOX_THICKNESS)
-        final_image_detection = torch.cat(tensors=(final_image_detection,image.unsqueeze(dim=0)),dim=0)
+    final_image_detection = []
+    print(images.shape)
+    for (detections,image) in zip(final_detection,images):
+        for detection in detections:
+            cv2.rectangle(image,(int(detection[0]-detection[2]/2),int(detection[1]-detection[3]/2)),(int(detection[0]+detection[2]/2),int(detection[1]+detection[3]/2)),config.NEON_PINK,config.BOUNDING_BOX_THICKNESS)
+            print('---',image.shape)
+        final_image_detection.append(image)
     return final_image_detection
 
 
