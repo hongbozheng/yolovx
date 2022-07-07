@@ -44,8 +44,8 @@ def main():
 
     final_detection = utils.get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=config.IOU_THRESHOLD,box_format='midpoint')
     
-    print(final_detection)
-    print(final_detection.size())
+    print('[Final Detection]:     {}'.format(final_detection))
+    print('[Final Detection Dim]: {}'.format(final_detection.size()))
 
     # only work for 1 image (1 batch) right now
     final_image_detection = utils.draw_bounding_box(final_detection,image,height_ratio=image_height/input_dimension,width_ratio=image_width/input_dimension)
