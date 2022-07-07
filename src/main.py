@@ -46,16 +46,17 @@ def main():
     # print(yolo_detection.size())
     
     image = cv2.imread('../dog-cycle-car.png')
-    image = cv2.resize(image,(input_dimension,input_dimension))
-    image = image[np.newaxis,:,:,:]
     image = np.array(image)
+    image_height,image_width,_ = image.shape
     
+    image = image[np.newaxis,:,:,:]
+    print(image.shape)
     final_detection = utils.get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=config.IOU_THRESHOLD,box_format='midpoint')
-    final_image_detection = utils.draw_bounding_box(final_detection,image)
-    print('final_image_detection',final_image_detection)
+
+    # only work for 1 image (1 batch) right now
+    final_image_detection = utils.draw_bounding_box(final_detection,image,height_ratio=image_height/input_dimension,width_ratio=image_width/input_dimension)
     for image in final_image_detection:
-        image
-        cv2.imwrite("../img.jpg",image)
+        cv2.imwrite("../dog-cycle-truck.jpg",image)
 
 if __name__ == '__main__':
     main() 
