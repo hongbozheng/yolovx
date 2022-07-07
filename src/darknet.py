@@ -2,13 +2,10 @@
 Implementation of YOLOv3 Architecture
 '''
 
-import logging
 import torch
 import torch.nn as nn
 from utils import parse_cfg
 from model import create_model
-import numpy as np
-# logging.basicConfig(level=logging.DEBUG)
 
 class Darknet(nn.Module):
     def __init__(self,cfg,yolo_weights):
@@ -62,7 +59,7 @@ class Darknet(nn.Module):
             elif module_type == 'yolo':
                 detection.append((i,x))
            
-           if i in self.cache_module_index:
-                    module_cache[i] = x
+            if i in self.cache_module_index:
+                module_cache[i] = x
             
         return detection

@@ -10,7 +10,6 @@ def get_input_image(image_path,input_dimension):
     image = cv2.imread(image_path)
     image = cv2.resize(image,(input_dimension,input_dimension))
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
-    # image = image[:,:,::-1].transpose((2,0,1))
     image = image.transpose((2,0,1))
     image = image[np.newaxis,:,:,:]/255.0
     image = torch.from_numpy(image).float()
@@ -30,10 +29,6 @@ def main():
     input_image = get_input_image('../dog-cycle-car.png',input_dimension)
     detections = YOLOv3.forward(input_image)
     
-    # print(detections[0][1])
-    # print(detections[1][1])
-    # print(detections[2][1])
-
     yolo_detection = torch.FloatTensor()
 
     for detection in detections:
@@ -41,17 +36,16 @@ def main():
         num_class = configuration[detection[0]]['classes']
         detection = utils.detection_postprocessing(detection=detection[1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
         yolo_detection = torch.cat(tensors=(yolo_detection,detection),dim=1)
-        # print('-----')
-    # print(yolo_detection)
-    # print(yolo_detection.size())
     
     image = cv2.imread('../dog-cycle-car.png')
     image = np.array(image)
     image_height,image_width,_ = image.shape
-    
     image = image[np.newaxis,:,:,:]
-    print(image.shape)
+
     final_detection = utils.get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=config.IOU_THRESHOLD,box_format='midpoint')
+    
+    print(final_detection)
+    print(final_detection.size())
 
     # only work for 1 image (1 batch) right now
     final_image_detection = utils.draw_bounding_box(final_detection,image,height_ratio=image_height/input_dimension,width_ratio=image_width/input_dimension)
