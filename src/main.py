@@ -18,6 +18,10 @@ def get_input_image(image_path,input_dimension):
 
 def main():
     YOLOv3 = darknet.Darknet(YOLOv3_CFG,YOLOv3_WEIGHTS)
+    # if CUDA:
+    #     YOLOv3.to(DEVICE)
+    #     print('[INFO]: YOLOv3 Model Loaded into CUDA')
+    YOLOv3.eval()
     # YOLOv3.load_weights(YOLOv3_WEIGHTS)
     net = YOLOv3.get_net()
     configuration = YOLOv3.get_configuration()[1:]
@@ -29,7 +33,7 @@ def main():
     # print(detections[0][1])
     # print(detections[1][1])
     # print(detections[2][1])
-    
+
     yolo_detection = torch.FloatTensor()
 
     for detection in detections:
@@ -44,5 +48,4 @@ def main():
     final_detection = get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=IOU_THRESHOLD,box_format='midpoint')
 
 if __name__ == '__main__':
-    main()
-    
+    main() 

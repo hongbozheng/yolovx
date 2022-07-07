@@ -239,13 +239,13 @@ def non_max_suppression(class_detection, iou_threshold, box_format='midpoint'):
     # probably make class_prediction a list of tensor is easier ????? idk
     class_detection = class_detection[torch.sort(input=class_detection[:,4],descending=True)[1]]
     
-    print('class detetct',class_detection)
+    # print('class detetct',class_detection)
 
     for i in range(class_detection.size(dim=0)):
         # print('i',i)
         for k in range(i+1,class_detection.size(dim=0)):
             # print('k',k)
-            print('iou',intersection_over_union(class_detection[i],class_detection[k]))
+            # print('iou',intersection_over_union(class_detection[i],class_detection[k]))
             if intersection_over_union(class_detection[i],class_detection[k]) > iou_threshold:
                 class_detection[k] *= 0
 
@@ -277,7 +277,6 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
     print(yolo_detection.size())
     
     for i in range(yolo_detection.size(dim=0)):
-        batch_detection = torch.FloatTensor()
         detection = yolo_detection[i]
         detection = detection[detection[:,4]!=0]
 
@@ -285,15 +284,15 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
             continue
 
         highest_class_score, class_index = torch.max(detection[:,5:],dim=1)
-        detection = torch.cat(tensors=(detection[:,:5],
-                                       class_index.float().unsqueeze(dim=1),
-                                       highest_class_score.float().unsqueeze(dim=1)),dim=1)
+        detection = torch.cat(tensors=(detection[:,:5],class_index.float().unsqueeze(dim=1),highest_class_score.float().unsqueeze(dim=1)),dim=1)
 
         # print(detection)
 
         detect_class = torch.unique(detection[:,-2])
 
         # print(detect_class)
+        
+        batch_detection = torch.FloatTensor()
 
         for c in detect_class:
             class_detection = detection[detection[:,-2]==c] 
@@ -306,6 +305,7 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
             batch_detection = torch.cat(tensors=(batch_detection,class_detection),dim=0)
         final_detection = torch.cat(tensors=(final_detection,batch_detection.unsqueeze(dim=0)),dim=0)
     print(final_detection)
+    print(final_detection.size())
 
 
 
