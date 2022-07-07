@@ -1,5 +1,6 @@
 '''
 Create model of YOLOv3 architecture
+Load YOLOv3 Pretrained Weights
 '''
 
 import torch.nn as nn
@@ -41,7 +42,6 @@ def create_model(configuration, yolo_weights):
             kernel_size = layer_config['size']
             padding     = layer_config['pad']
             
-            # information on darknet wiki
             if padding:
                 padding = kernel_size//2
             else:
@@ -58,15 +58,9 @@ def create_model(configuration, yolo_weights):
                 batch_norm = nn.BatchNorm2d(num_features=filters)
 
                 weight_num = batch_norm.bias.numel()
-                # print('weight_num: {}'.format(weight_num))
-
-                # print('weights: {}'.format(weights[ptr:ptr+weight_num]))
-                # or .view_as(bn.bias.data)
                 batch_norm_bias = torch.from_numpy(weights[ptr:ptr+weight_num]).view(batch_norm.bias.data.size())
-                # print('bn_bias: {}'.format(bn_bias))
                 batch_norm.bias.data.copy_(batch_norm_bias)
                 ptr += weight_num
-                # print('bn.bias: {}'.format(bn.bias))
 
                 batch_norm_weight = torch.from_numpy(weights[ptr:ptr+weight_num]).view(batch_norm.weight.data.size())
                 batch_norm.weight.data.copy_(batch_norm_weight)
@@ -96,23 +90,11 @@ def create_model(configuration, yolo_weights):
             if batch_normalize:
                 module.add_module('batchnorm2d_{}'.format(layer_index),batch_norm)
             
-            # may need to add more cases for other activation functions in the future
             if layer_config['activation'] == 'leaky':
                 activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
                 module.add_module('leakyrelu_{}'.format(layer_index),activation_function)
 
-            # convolutional layer before yolo layer, activation function = linear
-            # if we have linear layer, conv2d bias=T/F, linear bias=T/F
-            # elif block['activation'] == 'linear':
-            #     activation_function = nn.Linear(in_features=filters,
-            #                                     out_features=filters,
-            #                                     bias=bias)
-            #     module.add_module('Linear_{}'.format(index),activation_function)
-
         elif layer_config['type'] == 'shortcut':
-            # what is he doing with from_ in Github ???
-            # EmptyLayer() class inherit from nn.Module, necessary?
-            # cache_module_index.append(index-1)
             try:
                 for i in range(len(layer_config['from'])):
                     layer_config['from'][i] += layer_index
@@ -123,11 +105,9 @@ def create_model(configuration, yolo_weights):
             module.add_module('shortcut_{}'.format(layer_index),nn.Module())
         
         elif layer_config['type'] == 'yolo':
-            # cache_module_index.append(layer_index)
             module.add_module('yolo_{}'.format(layer_index),nn.Module())
 
         elif layer_config['type'] == 'route':
-            # EmptyLayer() class inherit from nn.Module, necessary?
             filters = 0
             try:
                 for i in range(len(layer_config['layers'])):
