@@ -1,6 +1,7 @@
+from config import *
 import darknet
 from utils import detection_postprocessing
-from utils import get_evaluation_box
+from utils import get_final_detection
 import cv2
 import numpy as np
 from torch.autograd import Variable
@@ -16,8 +17,8 @@ def get_input_image(image_path,input_dimension):
     return image
 
 def main():
-    YOLOv3 = darknet.Darknet('../cfg/yolov3.cfg')
-    YOLOv3.load_weights('../weights/yolov3.weights')
+    YOLOv3 = darknet.Darknet(YOLOv3_CFG)
+    YOLOv3.load_weights(YOLOv3_WEIGHTS)
     net = YOLOv3.get_net()
     blocks = YOLOv3.get_blocks()[1:]
     batch = net['batch']
@@ -40,7 +41,7 @@ def main():
     # print(yolo_detection)
     # print(yolo_detection.size())
 
-    get_evaluation_box(yolo_detection=yolo_detection,obj_score_threshold=0.7,num_class=num_class,iou_threshold=0.5,box_format='midpoint')
+    final_detection = get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=IOU_THRESHOLD,box_format='midpoint')
 
 if __name__ == '__main__':
     main()
