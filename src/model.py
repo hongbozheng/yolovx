@@ -161,9 +161,10 @@ def create_model(configuration, yolo_weights):
         prev_filters = filters
         filters_list.append(filters)
   
-    print(ptr)
     cache_module_index.sort(reverse=False)
-    print('[INFO]: Finish creating model')
+    print('[INFO]: Finish Creating YOLOv3 Model')
+    if ptr == len(weights):
+        print('[INFO]: {} Successfully Loaded'.format(yolo_weights[11:]))
     print('[Net]:  {}'.format(net))
     # print('[Model]: {}'.format(model))
     print('[Cache Module Index]: {}'.format(cache_module_index))
