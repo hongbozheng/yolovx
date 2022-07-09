@@ -174,9 +174,12 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
     return final_detection
 
 '''
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ # of detection in each yolo layer $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-# def coordinate_conversion(final_detection):
+def get_yolo_layer_num_detection(detection_info,yolo_detection):
+    print(detection_info)
+    print(yolo_detection)
+    print(yolo_detection.size())
 
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

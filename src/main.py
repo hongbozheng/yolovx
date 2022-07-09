@@ -37,11 +37,16 @@ def main():
         detection = utils.detection_postprocessing(detection=detection[1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
         yolo_detection = torch.cat(tensors=(yolo_detection,detection),dim=1)
     
+    # # of detection in each Yolo Layer
+    detection_info = [(detection[1].size(dim=2),int(detection[1].size(dim=1)/config.BBOX_ATTRIBUTE)) for detection in detections] 
+    utils.get_yolo_layer_num_detection(detection_info=detection_info,yolo_detection=yolo_detection)
+
     # Plot Anchor Box
     image = cv2.imread('../dog-cycle-car.png')
     image = np.array(image)
-    # yolo_layer_index = [detection[0] for detection in detections]
-    # anchor_image = utils.draw_anchor_box(net=net,configuration=configuration,yolo_layer_index=yolo_layer_index,image=image,mode='separate')
+    if config.PLOT_ANCHOR_BOX:
+        yolo_layer_index = [detection[0] for detection in detections]
+        anchor_image = utils.draw_anchor_box(net=net,configuration=configuration,yolo_layer_index=yolo_layer_index,image=image,mode='separate')
     
     image_height,image_width,_ = image.shape
     image = image[np.newaxis,:,:,:]

@@ -6,6 +6,10 @@ CUDA = torch.cuda.is_available()
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 IOU_THRESHOLD = 0.5
 OBJ_SCORE_THRESHOLD = 0.75
+BBOX_ATTRIBUTE = 85
+
+# FLAG
+PLOT_ANCHOR_BOX = False
 
 # COLOR (B,G,R)
 CYAN = (255,255,0)
