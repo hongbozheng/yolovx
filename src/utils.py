@@ -77,12 +77,13 @@ def detection_postprocessing(detection, batch, input_dimension, anchors, num_cla
     grid_size = input_dimension//grid_scale
     num_anchors = len(anchors)
     bbox_attribute = 5+num_class
-   
+
     detection = detection.view(batch_size,num_anchors*bbox_attribute,grid_scale*grid_scale).transpose(dim0=1,dim1=2).contiguous()
     detection = detection.view(batch_size,grid_scale*grid_scale*num_anchors,bbox_attribute)
    
     x_offset,y_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
     xy_offset = torch.cat(tensors=(x_offset.view(-1,1),y_offset.view(-1,1)),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
+
     detection[:,:,:2] = (torch.sigmoid(detection[:,:,:2])+xy_offset)*grid_size
     detection[:,:,4:] = torch.sigmoid(detection[:,:,4:])
     anchors = torch.FloatTensor(anchors).repeat(grid_scale*grid_scale,1).unsqueeze(dim=0)
@@ -159,7 +160,7 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
         highest_class_score, class_index = torch.max(detection[:,5:],dim=1)
         detection = torch.cat(tensors=(detection[:,:5],class_index.float().unsqueeze(dim=1),highest_class_score.float().unsqueeze(dim=1)),dim=1)
         detect_class = torch.unique(detection[:,-2])
-        
+
         batch_detection = torch.FloatTensor()
 
         for c in detect_class:
@@ -183,7 +184,27 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$
 def draw_bounding_box(final_detection,images,height_ratio,width_ratio):
     final_image_detection = []
     for (detections,image) in zip(final_detection,images):
-        for detection in detections:
-            cv2.rectangle(image,(int((detection[0]-detection[2]/2)*width_ratio),int((detection[1]-detection[3]/2)*height_ratio)),(int((detection[0]+detection[2]/2)*width_ratio),int((detection[1]+detection[3]/2)*height_ratio)),config.NEON_PINK,config.BOUNDING_BOX_THICKNESS)
+        for (detection,color) in zip(detections,config.COLOR):
+            cv2.rectangle(image,(int((detection[0]-detection[2]/2)*width_ratio),int((detection[1]-detection[3]/2)*height_ratio)),(int((detection[0]+detection[2]/2)*width_ratio),int((detection[1]+detection[3]/2)*height_ratio)),color,config.BOUNDING_BOX_THICKNESS)
         final_image_detection.append(image)
     return final_image_detection
+
+'''
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw anchor box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+'''
+def draw_anchor_box(net,configuration,yolo_layer_index,image,mode='together'):
+    anchors = [anchor for anchor in configuration[yolo_layer_index[0]]['anchors']]
+    image_height,image_width,_ = image.shape
+    input_dimension = net['height']
+    
+    if mode == 'together':
+        for (anchor,color) in zip(anchors,config.COLOR):
+            cv2.rectangle(image,(int(image_width/2-anchor[0]/2*image_width/input_dimension),int(image_height/2-anchor[1]/2*image_height/input_dimension)),(int(image_width/2+anchor[0]/2*image_width/input_dimension),int(image_height/2+anchor[1]/2*image_height/input_dimension)),color,config.BOUNDING_BOX_THICKNESS)
+        cv2.imwrite("../anchor_image/anchor.jpg",image)
+        print('[INFO]: Anchor image saved at ../anchor_image/anchor.jpg')
+    else:
+        for index,(anchor,color) in enumerate(zip(anchors,config.COLOR)):
+            image_ = np.copy(image)
+            cv2.rectangle(image_,(int(image_width/2-anchor[0]/2*image_width/input_dimension),int(image_height/2-anchor[1]/2*image_height/input_dimension)),(int(image_width/2+anchor[0]/2*image_width/input_dimension),int(image_height/2+anchor[1]/2*image_height/input_dimension)),color,config.BOUNDING_BOX_THICKNESS)
+            cv2.imwrite("../anchor_image/anchor_"+str(index)+".jpg",image_)
+            print('[INFO]: Anchor '+str(index)+' image saved at ../anchor_image/anchor_'+str(index)+'.jpg')
