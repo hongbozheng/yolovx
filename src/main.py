@@ -9,7 +9,6 @@ import torch
 def get_input_image(image_path,input_dimension):
     image = cv2.imread(image_path)
     image = cv2.resize(image,(input_dimension,input_dimension))
-    image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     image = image.transpose((2,0,1))
     image = image[np.newaxis,:,:,:]/255.0
     image = torch.from_numpy(image).float()
@@ -45,7 +44,7 @@ def main():
     image = np.array(image)
     if config.PLOT_ANCHOR_BOX:
         yolo_layer_index = [detection[0] for detection in detections]
-        anchor_image = utils.draw_anchor_box(net=net,configuration=configuration,yolo_layer_index=yolo_layer_index,image=image,mode='separate')
+        anchor_image = utils.draw_anchor_box(input_dimension=net['height'],configuration=configuration,yolo_layer_index=yolo_layer_index,image=image,mode='separate')
     
     image_height,image_width,_ = image.shape
     image = image[np.newaxis,:,:,:]
@@ -56,7 +55,7 @@ def main():
     print('[Final Detection Dim]: {}'.format(final_detection.size()))
     
     # only work for 1 image (1 batch) right now
-    final_image_detection = utils.draw_bounding_box(final_detection=final_detection,images=image,height_ratio=image_height/input_dimension,width_ratio=image_width/input_dimension)
+    final_image_detection = utils.draw_bounding_box(input_dimension=net['height'],final_detection=final_detection,images=image)
     for image in final_image_detection:
         cv2.imwrite("../dog-cycle-truck.jpg",image)
     

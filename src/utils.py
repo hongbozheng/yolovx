@@ -184,21 +184,24 @@ def get_yolo_layer_num_detection(detection,obj_score_threshold,yolo_layer_index)
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def draw_bounding_box(final_detection,images,height_ratio,width_ratio):
+def draw_bounding_box(input_dimension,final_detection,images):
     final_image_detection = []
     for (detections,image) in zip(final_detection,images):
+        image_height,image_width,_ = image.shape
         for (detection,color) in zip(detections,config.COLOR):
-            cv2.rectangle(image,(int((detection[0]-detection[2]/2)*width_ratio),int((detection[1]-detection[3]/2)*height_ratio)),(int((detection[0]+detection[2]/2)*width_ratio),int((detection[1]+detection[3]/2)*height_ratio)),color,config.BOUNDING_BOX_THICKNESS)
+            cv2.rectangle(image,(int((detection[0]-detection[2]/2)*image_width/input_dimension),int((detection[1]-detection[3]/2)*image_height/input_dimension)),(int((detection[0]+detection[2]/2)*image_width/input_dimension),int((detection[1]+detection[3]/2)*image_height/input_dimension)),color,config.BOUNDING_BOX_THICKNESS)
+
+
         final_image_detection.append(image)
     return final_image_detection
 
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw anchor box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def draw_anchor_box(net,configuration,yolo_layer_index,image,mode='together'):
+def draw_anchor_box(input_dimension,configuration,yolo_layer_index,image,mode='together'):
     anchors = [anchor for anchor in configuration[yolo_layer_index[0]]['anchors']]
     image_height,image_width,_ = image.shape
-    input_dimension = net['height']
+    # input_dimension = net['height']
     
     if mode == 'together':
         for (anchor,color) in zip(anchors,config.COLOR):
