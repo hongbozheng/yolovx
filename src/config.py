@@ -1,4 +1,5 @@
 import torch
+import cv2
 
 YOLOv3_CFG = '../cfg/yolov3.cfg'
 YOLOv3_WEIGHTS = '../weights/yolov3.weights'
@@ -28,6 +29,8 @@ BLACK = (0,0,0)
 COLOR = [CYAN,BRIGHT_ORANGE,BRIGHT_YELLOW,VIOLET,RED,NEON_GREEN,PINK,BLUE,MAGENTA,CORAL,WHITE,BLACK]
 
 BOUNDING_BOX_THICKNESS = 1
+LABEL_FONT = cv2.FONT_HERSHEY_SIMPLEX
+LABEL_SCALE = 0.35
 
 COCO = ['person',
  'bicycle',
