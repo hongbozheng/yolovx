@@ -31,15 +31,14 @@ def main():
     
     yolo_detection = torch.FloatTensor()
 
-    for detection in detections:
+    for (yolo_layer_index,detection) in enumerate(detections):
         anchors = [anchor for index,anchor in enumerate(configuration[detection[0]]['anchors']) if index in configuration[detection[0]]['mask']]
         num_class = configuration[detection[0]]['classes']
         detection = utils.detection_postprocessing(detection=detection[1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
+        # # of detection in each Yolo Layer
+        if config.YOLO_LAYER_NUM_DETECTION:
+            utils.get_yolo_layer_num_detection(detection=detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,yolo_layer_index=yolo_layer_index)
         yolo_detection = torch.cat(tensors=(yolo_detection,detection),dim=1)
-    
-    # # of detection in each Yolo Layer
-    detection_info = [(detection[1].size(dim=2),int(detection[1].size(dim=1)/config.BBOX_ATTRIBUTE)) for detection in detections] 
-    utils.get_yolo_layer_num_detection(detection_info=detection_info,yolo_detection=yolo_detection)
 
     # Plot Anchor Box
     image = cv2.imread('../dog-cycle-car.png')

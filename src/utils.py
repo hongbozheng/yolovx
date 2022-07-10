@@ -151,8 +151,7 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
     final_detection = torch.FloatTensor()
 
     for i in range(yolo_detection.size(dim=0)):
-        detection = yolo_detection[i]
-        detection = detection[detection[:,4]!=0]
+        detection = yolo_detection[i][yolo_detection[i][:,4]!=0]
 
         if detection.numel() == 0:
             continue
@@ -176,10 +175,11 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ # of detection in each yolo layer $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def get_yolo_layer_num_detection(detection_info,yolo_detection):
-    print(detection_info)
-    print(yolo_detection)
-    print(yolo_detection.size())
+def get_yolo_layer_num_detection(detection,obj_score_threshold,yolo_layer_index):
+    detection *= (detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
+
+    for i in range(detection.size(dim=0)):
+        print('[INFO]: Batch '+str(i)+' YOLO Layer '+str(yolo_layer_index)+' makes '+str(detection[i][detection[i][:,4]!=0].size(dim=0))+' detection(s)')
 
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
