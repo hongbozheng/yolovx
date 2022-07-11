@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 from torch.autograd import Variable
 import torch
-import time
 
 def get_input_image(image_path,input_dimension):
     image = cv2.imread(image_path)
