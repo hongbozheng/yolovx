@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from torch.autograd import Variable
 import torch
+import time
 
 def get_input_image(image_path,input_dimension):
     image = cv2.imread(image_path)
@@ -13,17 +14,6 @@ def get_input_image(image_path,input_dimension):
     image = image[np.newaxis,:,:,:]/255.0
     image = torch.from_numpy(image).float()
     image = Variable(image)
-
-    # image_ = cv2.imread('../COCO_train2014_000000000762.jpeg')
-    # image_ = cv2.resize(image_,(input_dimension,input_dimension))
-    # image_ = image_.transpose((2,0,1))
-    # image_ = image_[np.newaxis,:,:,:]/255.0
-    # image_ = torch.from_numpy(image_).float()
-    # image_ = Variable(image_)
-
-    # images = np.concatenate((image,image_),axis=0)
-    # images = torch.from_numpy(images).float()
-    # images = Variable(images)
 
     return image
 
@@ -38,6 +28,7 @@ def main():
     batch = net['batch']
     input_dimension = net['height']
     input_image = get_input_image('../000177.jpeg',input_dimension)
+    
     detections = YOLOv3.forward(input_image)
     
     yolo_detection = torch.FloatTensor()
@@ -54,22 +45,18 @@ def main():
     # Plot Anchor Box
     image = cv2.imread('../000177.jpeg')
     image = np.array(image)
-    # image_ = cv2.imread('../COCO_train2014_000000000762.jpeg')
-    # image_ = np.array(image_)
     if config.PLOT_ANCHOR_BOX:
         yolo_layer_index = [detection[0] for detection in detections]
         anchor_image = utils.draw_anchor_box(input_dimension=net['height'],configuration=configuration,yolo_layer_index=yolo_layer_index,image=image,mode='separate')
    
+    final_detection = utils.get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=config.IOU_THRESHOLD,box_format='midpoint')
+
+    print('[Final Detection]:     {}'.format(final_detection))
+    print('[Final Detection Dim]: {}'.format(final_detection.size()))
+    
     images = []
     images.append(image)
-    # images.append(image_)
 
-    final_detection = utils.get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=config.IOU_THRESHOLD,box_format='midpoint')
-    
-    for detection in final_detection:
-        print('[Final Detection]:     {}'.format(detection))
-        print('[Final Detection Dim]: {}'.format(detection.size()))
-    
     # only work for 1 image (1 batch) right now
     final_image_detection = utils.draw_bounding_box(input_dimension=net['height'],final_detection=final_detection,images=images)
     for index,image in enumerate(final_image_detection):
