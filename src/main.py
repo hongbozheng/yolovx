@@ -13,6 +13,18 @@ def get_input_image(image_path,input_dimension):
     image = image[np.newaxis,:,:,:]/255.0
     image = torch.from_numpy(image).float()
     image = Variable(image)
+
+    # image_ = cv2.imread('../COCO_train2014_000000000762.jpeg')
+    # image_ = cv2.resize(image_,(input_dimension,input_dimension))
+    # image_ = image_.transpose((2,0,1))
+    # image_ = image_[np.newaxis,:,:,:]/255.0
+    # image_ = torch.from_numpy(image_).float()
+    # image_ = Variable(image_)
+
+    # images = np.concatenate((image,image_),axis=0)
+    # images = torch.from_numpy(images).float()
+    # images = Variable(images)
+
     return image
 
 def main():
@@ -25,7 +37,7 @@ def main():
     configuration = YOLOv3.get_configuration()[1:]
     batch = net['batch']
     input_dimension = net['height']
-    input_image = get_input_image('../dog-cycle-car.png',input_dimension)
+    input_image = get_input_image('../000177.jpeg',input_dimension)
     detections = YOLOv3.forward(input_image)
     
     yolo_detection = torch.FloatTensor()
@@ -40,25 +52,28 @@ def main():
         yolo_detection = torch.cat(tensors=(yolo_detection,detection),dim=1)
 
     # Plot Anchor Box
-    image = cv2.imread('../dog-cycle-car.png')
+    image = cv2.imread('../000177.jpeg')
     image = np.array(image)
+    # image_ = cv2.imread('../COCO_train2014_000000000762.jpeg')
+    # image_ = np.array(image_)
     if config.PLOT_ANCHOR_BOX:
         yolo_layer_index = [detection[0] for detection in detections]
         anchor_image = utils.draw_anchor_box(input_dimension=net['height'],configuration=configuration,yolo_layer_index=yolo_layer_index,image=image,mode='separate')
-    
-    image_height,image_width,_ = image.shape
-    image = image[np.newaxis,:,:,:]
+   
+    images = []
+    images.append(image)
+    # images.append(image_)
 
     final_detection = utils.get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=config.IOU_THRESHOLD,box_format='midpoint')
     
-    print('[Final Detection]:     {}'.format(final_detection))
-    print('[Final Detection Dim]: {}'.format(final_detection.size()))
+    for detection in final_detection:
+        print('[Final Detection]:     {}'.format(detection))
+        print('[Final Detection Dim]: {}'.format(detection.size()))
     
     # only work for 1 image (1 batch) right now
-    final_image_detection = utils.draw_bounding_box(input_dimension=net['height'],final_detection=final_detection,images=image)
-    for image in final_image_detection:
-        cv2.imwrite("../dog-cycle-truck.jpg",image)
-    
+    final_image_detection = utils.draw_bounding_box(input_dimension=net['height'],final_detection=final_detection,images=images)
+    for index,image in enumerate(final_image_detection):
+        cv2.imwrite("../detection_"+str(index)+".jpg",image)
 
 if __name__ == '__main__':
     main() 

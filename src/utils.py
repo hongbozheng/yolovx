@@ -148,7 +148,7 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ get final detection $$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint'):
     yolo_detection *= (yolo_detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
-    final_detection = torch.FloatTensor()
+    final_detection = []
 
     for i in range(yolo_detection.size(dim=0)):
         detection = yolo_detection[i][yolo_detection[i][:,4]!=0]
@@ -168,8 +168,8 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
                 class_detection = non_max_suppression(class_detection=class_detection,iou_threshold=iou_threshold,box_format=box_format)
             
             batch_detection = torch.cat(tensors=(batch_detection,class_detection),dim=0)
-        final_detection = torch.cat(tensors=(final_detection,batch_detection.unsqueeze(dim=0)),dim=0)
-
+        # final_detection = torch.cat(tensors=(final_detection,batch_detection.unsqueeze(dim=0)),dim=0)
+        final_detection.append(batch_detection)
     return final_detection
 
 '''
