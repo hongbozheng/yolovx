@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from torch.autograd import Variable
 import torch
+import time
 
 def get_input_image(image_path,input_dimension):
     image = cv2.imread(image_path)
@@ -26,8 +27,9 @@ def main():
     configuration = YOLOv3.get_configuration()[1:]
     batch = net['batch']
     input_dimension = net['height']
-    input_image = get_input_image('../000177.jpeg',input_dimension)
+    input_image = get_input_image(config.IMAGE,input_dimension)
     
+    start = time.time()
     detections = YOLOv3.forward(input_image)
     
     yolo_detection = torch.FloatTensor()
@@ -42,7 +44,7 @@ def main():
         yolo_detection = torch.cat(tensors=(yolo_detection,detection),dim=1)
 
     # Plot Anchor Box
-    image = cv2.imread('../000177.jpeg')
+    image = cv2.imread(config.IMAGE)
     image = np.array(image)
     if config.PLOT_ANCHOR_BOX:
         yolo_layer_index = [detection[0] for detection in detections]
@@ -58,6 +60,9 @@ def main():
 
     # only work for 1 image (1 batch) right now
     final_image_detection = utils.draw_bounding_box(input_dimension=net['height'],final_detection=final_detection,images=images)
+    end = time.time()
+    print('[INFO]: Inference takes {}'.format((end-start)*1.0e6))
+
     for index,image in enumerate(final_image_detection):
         cv2.imwrite("../detection_"+str(index)+".jpg",image)
 
