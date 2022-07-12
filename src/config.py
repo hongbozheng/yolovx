@@ -6,7 +6,7 @@ YOLOv3_WEIGHTS = '../weights/yolov3.weights'
 CUDA = torch.cuda.is_available()
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 IOU_THRESHOLD = 0.4
-OBJ_SCORE_THRESHOLD = 0.5
+OBJ_SCORE_THRESHOLD = 0.1
 BBOX_ATTRIBUTE = 85
 IMAGE = '../COCO_train2014_000000003220.jpeg'
 
