@@ -1,6 +1,6 @@
 '''
-Create model of YOLOv3 architecture
-Load YOLOv3 Pretrained Weights
+Create model of YOLO architecture
+Load YOLO Pretrained Weights
 '''
 
 import torch.nn as nn
@@ -8,7 +8,6 @@ import numpy as np
 import torch
 
 def create_model(configuration, yolo_weights):
-    
     net = configuration[0]
     model = nn.ModuleList()
     cache_module_index = []
@@ -20,9 +19,9 @@ def create_model(configuration, yolo_weights):
     file = open(yolo_weights,'rb')
     weights_info = np.fromfile(file=file,dtype=np.int32,count=5)
     weights = np.fromfile(file=file,dtype=np.float32)
-    print('[YOLOv3 Weights INFO]: {}'.format(weights_info))
-    print('[YOLOv3 Weights]:      {}'.format(weights))
-    print('[YOLOv3 Weights LEN]:  {}'.format(len(weights)))
+    print('[YOLO Weights INFO]: {}'.format(weights_info))
+    print('[YOLO Weights]:      {}'.format(weights))
+    print('[YOLO Weights LEN]:  {}'.format(len(weights)))
 
     ptr = 0
     weight_num = 0
