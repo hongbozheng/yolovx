@@ -28,7 +28,7 @@ def main():
     batch = net['batch']
     input_dimension = net['height']
     input_image = get_input_image(config.IMAGE,input_dimension)
-    
+    '''
     start = time.time()
     detections = YOLOv3.forward(input_image)
     
@@ -65,6 +65,6 @@ def main():
 
     for index,image in enumerate(final_image_detection):
         cv2.imwrite("../detection_"+str(index)+".png",image)
-
+    '''
 if __name__ == '__main__':
     main() 

@@ -1,7 +1,7 @@
 import torch
 import cv2
 
-YOLOv3_CFG = '../cfg/yolov3.cfg'
+YOLOv3_CFG = '../cfg/yolov4.cfg'
 YOLOv3_WEIGHTS = '../weights/yolov3.weights'
 CUDA = torch.cuda.is_available()
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
