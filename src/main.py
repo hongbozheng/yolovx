@@ -18,7 +18,7 @@ def get_input_image(image_path,input_dimension):
     return image
 
 def main():
-    YOLOv3 = darknet.Darknet(config.YOLOv3_CFG,config.YOLOv3_WEIGHTS)
+    YOLOv3 = darknet.Darknet(config.YOLO_CFG,config.YOLO_WEIGHTS)
     # if CUDA:
     #     YOLOv3.to(DEVICE)
     #     print('[INFO]: YOLOv3 Model Loaded into CUDA')
@@ -27,8 +27,9 @@ def main():
     configuration = YOLOv3.get_configuration()[1:]
     batch = net['batch']
     input_dimension = net['height']
-    input_image = get_input_image(config.IMAGE,input_dimension)
     '''
+    input_image = get_input_image(config.IMAGE,input_dimension)
+    
     start = time.time()
     detections = YOLOv3.forward(input_image)
     

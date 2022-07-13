@@ -4,14 +4,14 @@ Implementation of YOLOv3 Architecture
 
 import torch
 import torch.nn as nn
-from utils import parse_cfg
-from model import create_model
+import parse
+import model
 
 class Darknet(nn.Module):
     def __init__(self,cfg,yolo_weights):
         super(Darknet,self).__init__()
-        self.configuration = parse_cfg(cfg)
-        self.net,self.model,self.cache_module_index = create_model(configuration=self.configuration,yolo_weights=yolo_weights)
+        self.configuration = parse.parse_cfg(cfg)
+        self.net,self.model,self.cache_module_index = model.create_model(configuration=self.configuration,yolo_weights=yolo_weights)
 
     def get_configuration(self):
         return self.configuration
