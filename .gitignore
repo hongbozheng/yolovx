@@ -1,2 +1,5 @@
 __pycache__/
 weights/
+anchor_image/
+image/
+detection_0.png

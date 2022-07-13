@@ -64,7 +64,7 @@ def main():
     print('[INFO]: Inference takes {}'.format((end-start)*1.0e6))
 
     for index,image in enumerate(final_image_detection):
-        cv2.imwrite("../detection_"+str(index)+".jpg",image)
+        cv2.imwrite("../detection_"+str(index)+".png",image)
 
 if __name__ == '__main__':
     main() 

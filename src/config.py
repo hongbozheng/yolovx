@@ -8,7 +8,7 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 IOU_THRESHOLD = 0.4
 OBJ_SCORE_THRESHOLD = 0.1
 BBOX_ATTRIBUTE = 85
-IMAGE = '../COCO_train2014_000000003220.jpeg'
+IMAGE = '../image/COCO_train2014_000000003220.jpeg'
 
 # FLAG
 YOLO_LAYER_NUM_DETECTION = False 
