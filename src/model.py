@@ -90,13 +90,13 @@ def create_model(configuration, yolo_weights):
             if batch_normalize:
                 module.add_module('batchnorm2d_{}'.format(layer_index),batch_norm)
             
-            activation_function_type,activation_function = get_activation(activation_function_type=layer_config['activation'])
-            
+            if layer_config['activation'] != 'linear':
+                activation_function_type,activation_function = get_activation(activation_function_type=layer_config['activation'])
+                module.add_module(activation_function_type.format(layer_index),activation_function)
             '''
             if layer_config['activation'] == 'leaky':
                 activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
             '''
-            module.add_module(activation_function_type.format(layer_index),activation_function)
 
         elif layer_config['type'] == 'maxpool':
             kernel_size = layer_config['size']
@@ -156,7 +156,7 @@ def create_model(configuration, yolo_weights):
     if ptr == len(weights):
         print('[INFO]: {} Successfully Loaded'.format(yolo_weights[11:]))
     print('[Net]:  {}'.format(net))
-    print('[Model]: {}'.format(model))
+    # print('[Model]: {}'.format(model))
     print('[Cache Module Index]: {}'.format(cache_module_index))
     return net, model, cache_module_index
 
