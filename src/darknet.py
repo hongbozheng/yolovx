@@ -38,7 +38,6 @@ class Darknet(nn.Module):
                 x = self.model[i](x)
 
             elif module_type == 'shortcut':
-                # x = module_cache[i-1]
                 try:
                     for layer in self.configuration[i+1]['from']:
                         x += module_cache[layer]
