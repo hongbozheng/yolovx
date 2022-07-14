@@ -130,7 +130,7 @@ def draw_bounding_box(input_dimension,final_detection,images):
             label = config.COCO[int(detection[5])]+' {:.2f}'.format(float(detection[6])*100)+'%'
             label_size = cv2.getTextSize(label,config.LABEL_FONT,config.LABEL_SCALE,1)[0]
             cv2.rectangle(image,(TL[0],TL[1]-label_size[1]),(TL[0]+label_size[0],TL[1]),color,-1)
-            cv2.putText(image,label,TL,config.LABEL_FONT,config.LABEL_SCALE,config.BLACK,1)
+            cv2.putText(image,label,TL,config.LABEL_FONT,config.LABEL_SCALE,config.BLACK,1,cv2.LINE_AA)
 
         final_image_detection.append(image)
     return final_image_detection
