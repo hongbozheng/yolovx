@@ -29,7 +29,6 @@ def create_model(configuration, yolo_weights):
 
     for layer_index,layer_config in enumerate(configuration[1:]):
         module = nn.Sequential()
-        print(layer_config)     
         if layer_config['type'] == 'convolutional':
             try:
                 batch_normalize = layer_config['batch_normalize']
@@ -121,7 +120,6 @@ def create_model(configuration, yolo_weights):
             module.add_module('yolo_{}'.format(layer_index),nn.Module())
 
         elif layer_config['type'] == 'route':
-            print(layer_config['layers'])
             filters = 0
             try:
                 for i in range(len(layer_config['layers'])):
