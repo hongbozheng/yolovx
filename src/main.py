@@ -18,6 +18,7 @@ def get_input_image(image_path,input_dimension):
     return image
 
 def main():
+    class_label = utils.load_label(config.CLASS_LABEL)
     YOLOv3 = darknet.Darknet(config.YOLO_CFG,config.YOLO_WEIGHTS)
     # if CUDA:
     #     YOLOv3.to(DEVICE)
@@ -59,7 +60,7 @@ def main():
     images.append(image)
 
     # only work for 1 image (1 batch) right now
-    final_image_detection = utils.draw_bounding_box(input_dimension=net['height'],final_detection=final_detection,images=images)
+    final_image_detection = utils.draw_bounding_box(class_label=class_label,input_dimension=net['height'],final_detection=final_detection,images=images)
     end = time.time()
     print('[INFO]: Inference takes {}'.format((end-start)*1.0e6))
 

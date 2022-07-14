@@ -6,6 +6,14 @@ import cv2
 epsilon = 1e-6
 
 '''
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ load dataset label $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+'''
+def load_label(data_label_file):
+    fp = open(data_label_file,'r')
+    label = fp.read().split('\n')[:-1]
+    return label
+
+'''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def detection_postprocessing(detection, batch, input_dimension, anchors, num_class, CUDA=True):
@@ -120,14 +128,14 @@ def get_yolo_layer_num_detection(detection,obj_score_threshold,yolo_layer_index)
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw bounding box $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def draw_bounding_box(input_dimension,final_detection,images):
+def draw_bounding_box(class_label,input_dimension,final_detection,images):
     final_image_detection = []
     for (detections,image) in zip(final_detection,images):
         image_height,image_width,_ = image.shape
         for (detection,color) in zip(detections,config.COLOR):
             TL = (int((detection[0]-detection[2]/2)*image_width/input_dimension),int((detection[1]-detection[3]/2)*image_height/input_dimension))
             cv2.rectangle(image,TL,(int((detection[0]+detection[2]/2)*image_width/input_dimension),int((detection[1]+detection[3]/2)*image_height/input_dimension)),color,config.BOUNDING_BOX_THICKNESS)
-            label = config.COCO[int(detection[5])]+' {:.2f}'.format(float(detection[6])*100)+'%'
+            label = class_label[int(detection[5])]+' {:.2f}'.format(float(detection[6])*100)+'%'
             label_size = cv2.getTextSize(label,config.LABEL_FONT,config.LABEL_SCALE,1)[0]
             cv2.rectangle(image,(TL[0],TL[1]-label_size[1]),(TL[0]+label_size[0],TL[1]),color,-1)
             cv2.putText(image,label,TL,config.LABEL_FONT,config.LABEL_SCALE,config.BLACK,1,cv2.LINE_AA)
