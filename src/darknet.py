@@ -28,7 +28,6 @@ class Darknet(nn.Module):
     def forward(self,x):
         module_cache = {}
         detection = []
-        write = False
 
         for i in range(len(self.model)):
             module_type = self.configuration[i+1]['type']
