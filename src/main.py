@@ -36,7 +36,10 @@ def main():
     yolo_detection = torch.FloatTensor()
 
     for (yolo_layer_index,detection) in enumerate(detections):
-        anchors = [anchor for index,anchor in enumerate(configuration[detection[0]]['anchors']) if index in configuration[detection[0]]['mask']]
+        try:
+            anchors = [anchor for index,anchor in enumerate(configuration[detection[0]]['anchors']) if index in configuration[detection[0]]['mask']]
+        except:
+            anchors = [configuration[detection[0]]['anchors'][configuration[detection[0]]['mask']]]
         num_class = configuration[detection[0]]['classes']
         detection = utils.detection_postprocessing(detection=detection[1],batch=batch,input_dimension=input_dimension,anchors=anchors,num_class=num_class,CUDA=True)
         # # of detection in each Yolo Layer
