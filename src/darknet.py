@@ -31,7 +31,6 @@ class Darknet(nn.Module):
         write = False
 
         for i in range(len(self.model)):
-            
             module_type = self.configuration[i+1]['type']
 
             if module_type == 'convolutional' or module_type == 'upsample':

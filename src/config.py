@@ -2,8 +2,8 @@ import torch
 import cv2
 
 CLASS_LABEL = '../data/coco.names'
-YOLO_CFG = '../cfg/yolov3.cfg'
-YOLO_WEIGHTS = '../weights/yolov3.weights'
+YOLO_CFG = '../cfg/yolov4.cfg'
+YOLO_WEIGHTS = '../weights/yolov4.weights'
 CUDA = torch.cuda.is_available()
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 IOU_THRESHOLD = 0.4
