@@ -7,6 +7,7 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Parse YOLO cfg file $$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def parse_cfg(cfg):
     
+    print('[INFO]: Start to parse YOLO CFG')
     file = open(cfg,'r')
     lines = file.read().split('\n')
     lines = [x for x in lines if len(x) > 0]
@@ -60,6 +61,6 @@ def parse_cfg(cfg):
 
     configuration.append(layer_config)
     logging.debug('[blocks]: {}'.format(layer_config))
-    print('[INFO]:   Finish parsing cfg file')
-    print('[CONFIG]: [Net]={} + [Layer]={}'.format(1,len(configuration)-1))
+    print('[INFO]: YOLO CFG Parsed')
+    print('[CFG]:  [Net]={} + [Layer]={}'.format(1,len(configuration)-1))
     return configuration

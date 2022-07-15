@@ -9,6 +9,8 @@ from activation import get_activation
 import numpy as np
 
 def create_model(configuration, yolo_weights):
+    
+    print('[INFO]: Start to create YOLO architecture & load YOLO pretrained weights')
     net = configuration[0]
     model = nn.ModuleList()
     cache_module_index = []
@@ -20,9 +22,9 @@ def create_model(configuration, yolo_weights):
     file = open(yolo_weights,'rb')
     weights_info = np.fromfile(file=file,dtype=np.int32,count=5)
     weights = np.fromfile(file=file,dtype=np.float32)
-    print('[YOLO Weights INFO]: {}'.format(weights_info))
-    print('[YOLO Weights]:      {}'.format(weights))
-    print('[YOLO Weights LEN]:  {}'.format(len(weights)))
+    # print('[YOLO Weights INFO]: {}'.format(weights_info))
+    # print('[YOLO Weights]:      {}'.format(weights))
+    # print('[YOLO Weights LEN]:  {}'.format(len(weights)))
 
     ptr = 0
     weight_num = 0
@@ -92,10 +94,6 @@ def create_model(configuration, yolo_weights):
             if layer_config['activation'] != 'linear':
                 activation_function_type,activation_function = get_activation(activation_function_type=layer_config['activation'])
                 module.add_module(activation_function_type.format(layer_index),activation_function)
-            '''
-            if layer_config['activation'] == 'leaky':
-                activation_function = nn.LeakyReLU(negative_slope=0.1,inplace=True)
-            '''
 
         elif layer_config['type'] == 'maxpool':
             kernel_size = layer_config['size']
@@ -113,11 +111,8 @@ def create_model(configuration, yolo_weights):
             module.add_module('shortcut_{}'.format(layer_index),nn.Module())
         
         elif layer_config['type'] == 'upsample':
-            upsample = nn.Upsample(scale_factor=layer_config['stride'],mode='bilinear')
+            upsample = nn.Upsample(scale_factor=layer_config['stride'],mode='bilinear',align_corners=False)
             module.add_module('upsample_{}'.format(layer_index),upsample)
-
-        elif layer_config['type'] == 'yolo':
-            module.add_module('yolo_{}'.format(layer_index),nn.Module())
 
         elif layer_config['type'] == 'route':
             filters = 0
@@ -141,6 +136,9 @@ def create_model(configuration, yolo_weights):
 
             module.add_module('route_{}'.format(layer_index),nn.Module())
 
+        elif layer_config['type'] == 'yolo':
+            module.add_module('yolo_{}'.format(layer_index),nn.Module())
+
         else:
             print('[ERROR]: Module type NOT FOUND; Check cfg file')
             assert False
@@ -150,12 +148,12 @@ def create_model(configuration, yolo_weights):
         filters_list.append(filters)
   
     cache_module_index.sort(reverse=False)
-    print('[INFO]: Finish Creating YOLO Model')
+    print('[INFO]: YOLO Architecture Created')
     if ptr == len(weights):
         print('[INFO]: {} Successfully Loaded'.format(yolo_weights[11:]))
-    print('[Net]:  {}'.format(net))
-    # print('[Model]: {}'.format(model))
-    print('[Cache Module Index]: {}'.format(cache_module_index))
+    # print('[Net]:  {}'.format(net))
+    print('[Model]: {}'.format(model))
+    # print('[Cache Module Index]: {}'.format(cache_module_index))
     return net, model, cache_module_index
 
 # Test

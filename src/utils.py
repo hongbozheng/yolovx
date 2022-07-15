@@ -16,7 +16,7 @@ def load_label(data_label_file):
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ detection post processing $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def detection_postprocessing(detection, batch, input_dimension, anchors, num_class, CUDA=True):
+def detection_postprocessing(detection, batch, input_dimension, anchors, num_class, CUDA=False):
     batch_size = detection.size(dim=0)
     grid_scale = detection.size(dim=2)
     grid_size = input_dimension//grid_scale
@@ -27,11 +27,17 @@ def detection_postprocessing(detection, batch, input_dimension, anchors, num_cla
     detection = detection.view(batch_size,grid_scale*grid_scale*num_anchors,bbox_attribute)
    
     x_offset,y_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
-    xy_offset = torch.cat(tensors=(x_offset.view(-1,1),y_offset.view(-1,1)),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
-
+    if CUDA:
+        xy_offset = torch.cat(tensors=(x_offset.view(-1,1).cuda(),y_offset.view(-1,1).cuda()),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
+    else:
+        xy_offset = torch.cat(tensors=(x_offset.view(-1,1),y_offset.view(-1,1)),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
+    
     detection[:,:,:2] = (torch.sigmoid(detection[:,:,:2])+xy_offset)*grid_size
     detection[:,:,4:] = torch.sigmoid(detection[:,:,4:])
-    anchors = torch.FloatTensor(anchors).repeat(grid_scale*grid_scale,1).unsqueeze(dim=0)
+    if CUDA:
+        anchors = torch.FloatTensor(anchors).repeat(grid_scale*grid_scale,1).unsqueeze(dim=0).cuda()
+    else:
+        anchors = torch.FloatTensor(anchors).repeat(grid_scale*grid_scale,1).unsqueeze(dim=0)
     detection[:,:,2:4] = torch.exp(detection[:,:,2:4])*anchors
 
     return detection
@@ -91,9 +97,13 @@ def non_max_suppression(class_detection, iou_threshold, box_format='midpoint'):
 '''
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ get final detection $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 '''
-def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint'):
+def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint', CUDA=False):
     yolo_detection *= (yolo_detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
-    final_detection = torch.FloatTensor()
+    
+    if CUDA:
+        final_detection = torch.FloatTensor().cuda()
+    else:
+        final_detection = torch.FloatTensor()
 
     for i in range(yolo_detection.size(dim=0)):
         detection = yolo_detection[i][yolo_detection[i][:,4]!=0]
@@ -104,8 +114,11 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
         highest_class_score, class_index = torch.max(detection[:,5:],dim=1)
         detection = torch.cat(tensors=(detection[:,:5],class_index.float().unsqueeze(dim=1),highest_class_score.float().unsqueeze(dim=1)),dim=1)
         detect_class = torch.unique(detection[:,-2])
-
-        batch_detection = torch.FloatTensor()
+        
+        if CUDA:
+            batch_detection = torch.FloatTensor().cuda()
+        else:
+            batch_detection = torch.FloatTensor()
 
         for c in detect_class:
             class_detection = detection[detection[:,-2]==c] 

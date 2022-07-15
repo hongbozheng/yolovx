@@ -6,6 +6,7 @@ from parse import parse_cfg
 from model import create_model
 import torch
 import torch.nn as nn
+import time
 
 class Darknet(nn.Module):
     def __init__(self,cfg,yolo_weights):
@@ -28,6 +29,9 @@ class Darknet(nn.Module):
     def forward(self,x):
         module_cache = {}
         detection = []
+        
+        print('[INFO]: Start Inference')
+        inference_start_time = time.time()
 
         for i in range(len(self.model)):
             module_type = self.configuration[i+1]['type']
@@ -58,5 +62,8 @@ class Darknet(nn.Module):
            
             if i in self.cache_module_index:
                 module_cache[i] = x
-            
+        
+        print('[INFO]: Finish Inference')
+        print('[INFO]: Inference took {}ms'.format((time.time()-inference_start_time)*1.0e3))
+        print(detection)
         return detection
