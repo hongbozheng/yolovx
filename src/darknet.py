@@ -65,5 +65,5 @@ class Darknet(nn.Module):
         
         print('[INFO]: Finish Inference')
         print('[INFO]: Inference took {}ms'.format((time.time()-inference_start_time)*1.0e3))
-        print(detection)
+        
         return detection

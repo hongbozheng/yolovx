@@ -152,7 +152,7 @@ def create_model(configuration, yolo_weights):
     if ptr == len(weights):
         print('[INFO]: {} Successfully Loaded'.format(yolo_weights[11:]))
     # print('[Net]:  {}'.format(net))
-    print('[Model]: {}'.format(model))
+    # print('[Model]: {}'.format(model))
     # print('[Cache Module Index]: {}'.format(cache_module_index))
     return net, model, cache_module_index
 
