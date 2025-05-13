@@ -1,8 +1,9 @@
-'''
+"""
 activation function
-'''
+"""
 
 import torch.nn as nn
+
 
 def get_activation(activation_function_type):
     if activation_function_type == 'mish':

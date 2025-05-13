@@ -25,13 +25,13 @@ def detection_postprocessing(detection, batch, input_dimension, anchors, num_cla
 
     detection = detection.view(batch_size,num_anchors*bbox_attribute,grid_scale*grid_scale).transpose(dim0=1,dim1=2).contiguous()
     detection = detection.view(batch_size,grid_scale*grid_scale*num_anchors,bbox_attribute)
-   
+
     x_offset,y_offset = torch.FloatTensor(np.meshgrid(np.arange(grid_scale),np.arange(grid_scale)))
     if CUDA:
         xy_offset = torch.cat(tensors=(x_offset.view(-1,1).cuda(),y_offset.view(-1,1).cuda()),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
     else:
         xy_offset = torch.cat(tensors=(x_offset.view(-1,1),y_offset.view(-1,1)),dim=1).repeat(1,num_anchors).view(-1,2).unsqueeze(dim=0)
-    
+
     detection[:,:,:2] = (torch.sigmoid(detection[:,:,:2])+xy_offset)*grid_size
     detection[:,:,4:] = torch.sigmoid(detection[:,:,4:])
     if CUDA:
@@ -70,7 +70,7 @@ def intersection_over_union(box_1, box_2, box_format='midpoint'):
     y1 = torch.max(box1_y1,box2_y1)
     x2 = torch.min(box1_x2,box2_x2)
     y2 = torch.min(box1_y2,box2_y2)
-    
+
     # maybe can use cuda over here
     intersection = (x2-x1).clamp(min=0)*(y2-y1).clamp(min=0)
 
@@ -84,7 +84,7 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ non max suppression $$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def non_max_suppression(class_detection, iou_threshold, box_format='midpoint'):
     class_detection = class_detection[torch.sort(input=class_detection[:,4],descending=True)[1]]
-    
+
     for i in range(class_detection.size(dim=0)):
         for k in range(i+1,class_detection.size(dim=0)):
             if intersection_over_union(class_detection[i],class_detection[k]) > iou_threshold:
@@ -99,7 +99,7 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ get final detection $$$$$$$$$$$$$$$$$$$$$$$$
 '''
 def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_threshold=0.5, box_format='midpoint', CUDA=False):
     yolo_detection *= (yolo_detection[:,:,4] >= obj_score_threshold).float().unsqueeze(dim=2)
-    
+
     if CUDA:
         final_detection = torch.FloatTensor().cuda()
     else:
@@ -114,7 +114,7 @@ def get_final_detection(yolo_detection, obj_score_threshold, num_class, iou_thre
         highest_class_score, class_index = torch.max(detection[:,5:],dim=1)
         detection = torch.cat(tensors=(detection[:,:5],class_index.float().unsqueeze(dim=1),highest_class_score.float().unsqueeze(dim=1)),dim=1)
         detect_class = torch.unique(detection[:,-2])
-        
+
         if CUDA:
             batch_detection = torch.FloatTensor().cuda()
         else:
@@ -162,7 +162,7 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ draw anchor box $$$$$$$$$$$$$$$$$$$$$$$$$$$$
 def draw_anchor_box(input_dimension,configuration,yolo_layer_index,image,mode='together'):
     anchors = [anchor for anchor in configuration[yolo_layer_index[0]]['anchors']]
     image_height,image_width,_ = image.shape
-    
+
     if mode == 'together':
         for (anchor,color) in zip(anchors,config.COLOR):
             cv2.rectangle(image,(int(image_width/2-anchor[0]/2*image_width/input_dimension),int(image_height/2-anchor[1]/2*image_height/input_dimension)),(int(image_width/2+anchor[0]/2*image_width/input_dimension),int(image_height/2+anchor[1]/2*image_height/input_dimension)),color,config.BOUNDING_BOX_THICKNESS)

@@ -1,15 +1,15 @@
-'''
+"""
 Create model of YOLO architecture
 Load YOLO Pretrained Weights
-'''
+"""
 
 import torch
 import torch.nn as nn
 from activation import get_activation
 import numpy as np
 
+
 def create_model(configuration, yolo_weights):
-    
     print('[INFO]: Start to create YOLO architecture & load YOLO pretrained weights')
     net = configuration[0]
     model = nn.ModuleList()
@@ -18,7 +18,7 @@ def create_model(configuration, yolo_weights):
     prev_filters = 3
     filters = 0
     filters_list = []
-    
+
     file = open(yolo_weights,'rb')
     weights_info = np.fromfile(file=file,dtype=np.int32,count=5)
     weights = np.fromfile(file=file,dtype=np.float32)
@@ -38,11 +38,11 @@ def create_model(configuration, yolo_weights):
             except:
                 batch_normalize = 0
                 bias = True
-            
+
             filters     = layer_config['filters']
             kernel_size = layer_config['size']
             padding     = layer_config['pad']
-            
+
             if padding:
                 padding = (kernel_size-1)//2
             else:
@@ -74,7 +74,7 @@ def create_model(configuration, yolo_weights):
                 batch_norm_running_var = torch.from_numpy(weights[ptr:ptr+weight_num]).view(batch_norm.running_var.data.size())
                 batch_norm.running_var.data.copy_(batch_norm_running_var)
                 ptr += weight_num
-            
+
             else:
                 weight_num = convolutional_layer.bias.numel()
                 convolutional_layer_bias = torch.from_numpy(weights[ptr:ptr+weight_num]).view(convolutional_layer.bias.data.size())
@@ -87,10 +87,10 @@ def create_model(configuration, yolo_weights):
             ptr += weight_num
 
             module.add_module('conv2d_{}'.format(layer_index),convolutional_layer)
-            
+
             if batch_normalize:
                 module.add_module('batchnorm2d_{}'.format(layer_index),batch_norm)
-            
+
             if layer_config['activation'] != 'linear':
                 activation_function_type,activation_function = get_activation(activation_function_type=layer_config['activation'])
                 module.add_module(activation_function_type.format(layer_index),activation_function)
@@ -142,7 +142,7 @@ def create_model(configuration, yolo_weights):
         else:
             print('[ERROR]: Module type NOT FOUND; Check cfg file')
             assert False
-    
+
         model.append(module)
         prev_filters = filters
         filters_list.append(filters)

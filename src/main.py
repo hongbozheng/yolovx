@@ -9,6 +9,7 @@ from torch.autograd import Variable
 import torch
 import time
 
+
 def get_input_image(image_path,input_dimension):
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
@@ -20,6 +21,7 @@ def get_input_image(image_path,input_dimension):
 
     return image
 
+
 def main():
     class_label = utils.load_label(config.CLASS_LABEL)
     YOLOv3 = darknet.Darknet(config.YOLO_CFG,config.YOLO_WEIGHTS) 
@@ -29,15 +31,15 @@ def main():
     batch = net['batch']
     input_dimension = net['height']
     input_image = get_input_image(config.IMAGE,input_dimension)
-    
+
     if config.CUDA:
         print('[INFO]: Loading YOLO into CUDA')
         YOLOv3.cuda()
         input_image = input_image.cuda()
         print('[INFO]: YOLO Loaded into CUDA')
-    
+
     detections = YOLOv3.forward(input_image)
-    
+
     if config.CUDA:
         yolo_detection = torch.FloatTensor().cuda()
     else:
@@ -62,15 +64,15 @@ def main():
     if config.PLOT_ANCHOR_BOX:
         yolo_layer_index = [detection[0] for detection in detections]
         anchor_image = utils.draw_anchor_box(input_dimension=net['height'],configuration=configuration,yolo_layer_index=yolo_layer_index,image=image,mode='separate')
-   
+
     final_detection = utils.get_final_detection(yolo_detection=yolo_detection,obj_score_threshold=config.OBJ_SCORE_THRESHOLD,num_class=num_class,iou_threshold=config.IOU_THRESHOLD,box_format='midpoint',CUDA=config.CUDA)
-    
+
     print('[INFO]: Finish Post-Processing')
     print('[INFO]: Post-Processing took {}ms'.format((time.time()-postprocessing_start_time)*1.0e3))
     print('[INFO]: YOLO made {} detection(s)'.format(final_detection.size(dim=1)))
     # print('[Final Detection]:     {}'.format(final_detection))
     # print('[Final Detection Dim]: {}'.format(final_detection.size()))
-    
+
     images = []
     images.append(image)
 
@@ -80,5 +82,7 @@ def main():
     print('[INFO]: Finish drawing bounding box')
     for index,image in enumerate(final_image_detection):
         cv2.imwrite("../detection_"+str(index)+".png",image)
+
+
 if __name__ == '__main__':
     main() 
